@@ -75,8 +75,8 @@ Install these before starting:
 
 ```bash
 # 1. Clone the repo
-git clone https://github.com/<your-org>/cloud-bank.git
-cd cloud-bank
+git clone https://github.com/<your-org>/cloud-bank.git](https://github.com/wolfparktaerim/cloud-bank-localstack.git
+cd cloud-bank-localstack
 
 # 2. Run the bootstrap script (installs dependencies, starts LocalStack, applies Terraform)
 chmod +x scripts/bootstrap.sh
