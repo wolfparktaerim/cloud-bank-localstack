@@ -1,0 +1,37 @@
+name: Feature / Task
+description: New module, service, or infrastructure task
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: "## Feature / Task"
+  - type: input
+    id: title
+    attributes:
+      label: What needs to be built?
+      placeholder: "e.g. Add RDS read replica for reporting"
+    validations:
+      required: true
+  - type: dropdown
+    id: owner
+    attributes:
+      label: Assigned to (module owner)
+      options:
+        - Member 1 — Networking / IAM
+        - Member 2 — Compute / API Gateway
+        - Member 3 — Database / Storage
+        - Member 4 — Messaging / Monitoring
+        - Member 5 — Python Mocks / CI/CD
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description and acceptance criteria
+    validations:
+      required: true
+  - type: textarea
+    id: terraform
+    attributes:
+      label: Terraform resources involved
+      placeholder: "e.g. aws_db_instance, aws_dynamodb_table"

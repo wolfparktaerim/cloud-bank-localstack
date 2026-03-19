@@ -1,0 +1,56 @@
+name: Terraform Validate
+
+on:
+  pull_request:
+    branches: [develop, main]
+    paths:
+      - "terraform/**"
+
+jobs:
+  validate:
+    name: Validate Terraform
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.6.0"
+
+      - name: Terraform Format Check
+        working-directory: terraform
+        run: |
+          terraform fmt -check -recursive
+          echo "✅ Terraform formatting is correct"
+
+      - name: Terraform Init
+        working-directory: terraform
+        run: terraform init -backend=false
+        env:
+          AWS_ACCESS_KEY_ID: test
+          AWS_SECRET_ACCESS_KEY: test
+          AWS_DEFAULT_REGION: ap-southeast-1
+
+      - name: Terraform Validate
+        working-directory: terraform
+        run: |
+          terraform validate
+          echo "✅ Terraform configuration is valid"
+        env:
+          AWS_ACCESS_KEY_ID: test
+          AWS_SECRET_ACCESS_KEY: test
+          AWS_DEFAULT_REGION: ap-southeast-1
+
+      - name: Check for hardcoded credentials
+        run: |
+          echo "Scanning for hardcoded secrets..."
+          if grep -rn --include="*.tf" --include="*.tfvars" \
+            -E "(password|secret|key)\s*=\s*\"[^\"]{8,}\"" terraform/ \
+            | grep -v "LocalDev\|test\|example\|placeholder"; then
+            echo "❌ Potential hardcoded credentials found!"
+            exit 1
+          fi
+          echo "✅ No hardcoded credentials detected"

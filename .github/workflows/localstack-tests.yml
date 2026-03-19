@@ -1,0 +1,98 @@
+name: Integration Tests (LocalStack)
+
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop]
+
+jobs:
+  integration-tests:
+    name: Run Integration Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.6.0"
+
+      - name: Install Python dependencies
+        run: |
+          pip install pytest boto3 requests pyjwt flask
+
+      - name: Start LocalStack
+        run: |
+          docker compose up -d localstack
+          echo "Waiting for LocalStack..."
+          for i in {1..30}; do
+            if curl -sf http://localhost:4566/_localstack/health | python3 -c \
+              "import sys,json; h=json.load(sys.stdin); sys.exit(0 if h.get('status')=='running' else 1)" 2>/dev/null; then
+              echo "✅ LocalStack ready"
+              break
+            fi
+            sleep 3
+          done
+        env:
+          AWS_ACCESS_KEY_ID: test
+          AWS_SECRET_ACCESS_KEY: test
+          AWS_DEFAULT_REGION: ap-southeast-1
+
+      - name: Start Mock Services
+        run: |
+          docker compose up -d mock-auth mock-email
+          sleep 5
+          curl -sf http://localhost:5001/health && echo "✅ mock-auth ready"
+          curl -sf http://localhost:5002/health && echo "✅ mock-notifications ready"
+
+      - name: Terraform Init & Apply
+        working-directory: terraform
+        run: |
+          terraform init
+          terraform apply \
+            -var-file="environments/localstack/terraform.tfvars" \
+            -auto-approve
+        env:
+          AWS_ACCESS_KEY_ID: test
+          AWS_SECRET_ACCESS_KEY: test
+          AWS_DEFAULT_REGION: ap-southeast-1
+
+      - name: Seed Test Data
+        run: python3 scripts/seed_data.py
+        env:
+          AWS_ACCESS_KEY_ID: test
+          AWS_SECRET_ACCESS_KEY: test
+          AWS_DEFAULT_REGION: ap-southeast-1
+
+      - name: Run Unit Tests
+        run: pytest tests/unit/ -v --tb=short
+
+      - name: Run Integration Tests
+        run: pytest tests/integration/ -v --tb=short
+        env:
+          AWS_ACCESS_KEY_ID: test
+          AWS_SECRET_ACCESS_KEY: test
+          AWS_DEFAULT_REGION: ap-southeast-1
+          LOCALSTACK_ENDPOINT: http://localhost:4566
+          AUTH_MOCK_URL: http://localhost:5001
+          NOTIFICATIONS_MOCK_URL: http://localhost:5002
+
+      - name: Collect Docker logs on failure
+        if: failure()
+        run: |
+          echo "=== LocalStack logs ==="
+          docker compose logs localstack --tail=50
+          echo "=== mock-auth logs ==="
+          docker compose logs mock-auth --tail=20
+
+      - name: Tear down
+        if: always()
+        run: docker compose down -v
