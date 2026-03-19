@@ -1,4 +1,4 @@
-# 🏦 NeoBank SG — Cloud Infrastructure (LocalStack + Terraform)
+# 🏦 Bank SG — Cloud Infrastructure (LocalStack + Terraform)
 
 > Online Digital Banking Platform — Cloud Engineering & Management Project  
 > Simulated AWS infrastructure for 13,000,000 users in Singapore
@@ -34,13 +34,13 @@ This repository simulates a production-grade AWS cloud infrastructure for a Sing
 
 ## Team
 
-| Member   | GitHub    | Responsibility                              |
-| -------- | --------- | ------------------------------------------- |
-| Member 1 | @username | Terraform Core — Networking, IAM, Providers |
-| Member 2 | @username | Compute & API — Lambda, ECS, API Gateway    |
-| Member 3 | @username | Data Layer — RDS, DynamoDB, S3              |
-| Member 4 | @username | Messaging — SQS, SNS, EventBridge           |
-| Member 5 | @username | Python Mocks, CI/CD, Tests                  |
+| Member   | Responsibility                              |
+| -------- | ------------------------------------------- |
+| Member 1 | Terraform Core — Networking, IAM, Providers |
+| Member 2 | Compute & API — Lambda, ECS, API Gateway    |
+| Member 3 | Data Layer — RDS, DynamoDB, S3              |
+| Member 4 | Messaging — SQS, SNS, EventBridge           |
+| Member 5 | Python Mocks, CI/CD, Tests                  |
 
 ---
 
@@ -64,9 +64,9 @@ Install these before starting:
 | Tool           | Version | Install                                          |
 | -------------- | ------- | ------------------------------------------------ |
 | Docker Desktop | Latest  | https://docker.com                               |
-| Terraform      | >= 1.6  | `brew install terraform` or https://terraform.io |
+| Terraform      | >= 1.6  | https://terraform.io                             |
 | Python         | >= 3.10 | https://python.org                               |
-| AWS CLI        | >= 2.x  | `brew install awscli`                            |
+| AWS CLI        | >= 2.x  | https://aws.amazon.com/cli/                      |
 | Git            | Latest  | Pre-installed on most systems                    |
 
 ---
