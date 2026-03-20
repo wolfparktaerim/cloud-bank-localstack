@@ -6,26 +6,27 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 5.0"
     }
+    archive = {
+      source  = "hashicorp/archive"
+      version = "~> 2.0"
+    }
+    local = {
+      source  = "hashicorp/local"
+      version = "~> 2.0"
+    }
   }
 }
 
-# ─────────────────────────────────────────────
-# LocalStack Provider — points all AWS calls
-# to localhost:4566 instead of real AWS
-# ─────────────────────────────────────────────
 provider "aws" {
   region = var.aws_region
 
-  # Dummy credentials — LocalStack doesn't validate these
   access_key = "test"
   secret_key = "test"
 
-  # Skip real AWS validations
   skip_credentials_validation = true
   skip_metadata_api_check     = true
   skip_requesting_account_id  = true
 
-  # Route every service to LocalStack
   endpoints {
     s3             = "http://localhost:4566"
     dynamodb       = "http://localhost:4566"
@@ -42,4 +43,8 @@ provider "aws" {
     ssm            = "http://localhost:4566"
     sts            = "http://localhost:4566"
   }
+
+  # Critical for LocalStack on Windows — forces path-style S3 URLs
+  # Without this, S3 uses virtual-hosted style which Windows DNS cannot resolve
+  s3_use_path_style = true
 }

@@ -1,37 +1,39 @@
 # ─────────────────────────────────────────────
 # Module: database
 # Owner: Member 3
-# Creates: RDS PostgreSQL, DynamoDB tables
+# Creates: DynamoDB tables for all banking data
+#
+# Note: RDS/PostgreSQL requires LocalStack Pro.
+#       In community edition we use DynamoDB for
+#       all storage. Architecture doc explains the
+#       trade-off and how real deployment uses RDS.
 # ─────────────────────────────────────────────
 
-# ── RDS PostgreSQL (core banking accounts) ───
-resource "aws_db_subnet_group" "main" {
-  name       = "${var.project_name}-db-subnet-group"
-  subnet_ids = var.subnet_ids
+# ── DynamoDB: Core Accounts ───────────────────
+resource "aws_dynamodb_table" "accounts" {
+  name         = "${var.project_name}-accounts"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "account_id"
+
+  attribute {
+    name = "account_id"
+    type = "S"
+  }
+
+  attribute {
+    name = "user_id"
+    type = "S"
+  }
+
+  global_secondary_index {
+    name            = "UserIdIndex"
+    hash_key        = "user_id"
+    projection_type = "ALL"
+  }
 
   tags = merge(var.tags, {
-    Name = "${var.project_name}-db-subnet-group"
-  })
-}
-
-resource "aws_db_instance" "postgres" {
-  identifier        = "${var.project_name}-postgres"
-  engine            = "postgres"
-  engine_version    = "15.3"
-  instance_class    = var.db_instance_class
-  allocated_storage = 20
-
-  db_name  = var.db_name
-  username = var.db_username
-  password = var.db_password
-  port     = 5432
-
-  db_subnet_group_name = aws_db_subnet_group.main.name
-  skip_final_snapshot  = true   # LocalStack — skip snapshot on destroy
-
-  tags = merge(var.tags, {
-    Name    = "${var.project_name}-postgres"
-    Purpose = "Core banking accounts and transactions"
+    Name    = "${var.project_name}-accounts"
+    Purpose = "Core bank account records (replaces RDS in local sim)"
   })
 }
 
@@ -64,11 +66,11 @@ resource "aws_dynamodb_table" "user_sessions" {
 
   tags = merge(var.tags, {
     Name    = "${var.project_name}-user-sessions"
-    Purpose = "JWT session tokens and refresh tokens"
+    Purpose = "JWT session tokens with TTL auto-expiry"
   })
 }
 
-# ── DynamoDB: Transaction Ledger ─────────────
+# ── DynamoDB: Transaction Ledger ──────────────
 resource "aws_dynamodb_table" "transaction_ledger" {
   name         = "${var.project_name}-transaction-ledger"
   billing_mode = "PAY_PER_REQUEST"
@@ -103,7 +105,7 @@ resource "aws_dynamodb_table" "transaction_ledger" {
   })
 }
 
-# ── DynamoDB: OTP / 2FA ───────────────────────
+# ── DynamoDB: OTP Store ───────────────────────
 resource "aws_dynamodb_table" "otp_store" {
   name         = "${var.project_name}-otp-store"
   billing_mode = "PAY_PER_REQUEST"

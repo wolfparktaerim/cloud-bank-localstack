@@ -31,7 +31,7 @@ echo ""
 echo "  Infrastructure:"
 check "LocalStack running"              "curl -sf http://localhost:4566/_localstack/health"
 check "Mock Auth service"               "curl -sf http://localhost:5001/health"
-check "Mock Notifications service"      "curl -sf http://localhost:5002/health"
+check "Mock Notifications service"      "curl -sf http://localhost:5004/health"
 
 echo ""
 echo "  AWS Services (via LocalStack):"

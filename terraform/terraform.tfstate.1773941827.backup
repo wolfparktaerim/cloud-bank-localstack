@@ -1,0 +1,3114 @@
+{
+  "version": 4,
+  "terraform_version": "1.14.7",
+  "serial": 72,
+  "lineage": "1eb9525a-46c3-b7a7-7710-19eb843401cb",
+  "outputs": {
+    "api_gateway_url": {
+      "value": "http://localhost:4566/restapis/ivhfsmd9pa/localstack/_user_request_",
+      "type": "string"
+    },
+    "dynamodb_tables": {
+      "value": {
+        "accounts": "cloud-bank-accounts",
+        "otp": "cloud-bank-otp-store",
+        "sessions": "cloud-bank-user-sessions",
+        "transactions": "cloud-bank-transaction-ledger"
+      },
+      "type": [
+        "object",
+        {
+          "accounts": "string",
+          "otp": "string",
+          "sessions": "string",
+          "transactions": "string"
+        }
+      ]
+    },
+    "kyc_bucket_name": {
+      "value": "cloud-bank-kyc-documents-local",
+      "type": "string"
+    },
+    "rds_endpoint": {
+      "value": "localhost:5432",
+      "type": "string"
+    },
+    "transaction_queue_url": {
+      "value": "http://sqs.ap-southeast-1.localhost.localstack.cloud:4566/000000000000/cloud-bank-transactions-local",
+      "type": "string"
+    }
+  },
+  "resources": [
+    {
+      "module": "module.api_gateway",
+      "mode": "managed",
+      "type": "aws_api_gateway_deployment",
+      "name": "main",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "canary_settings": [],
+            "created_date": "2026-03-19T17:21:53Z",
+            "description": "",
+            "execution_arn": "arn:aws:execute-api:ap-southeast-1::ivhfsmd9pa/",
+            "id": "e8zc0in6ow",
+            "invoke_url": "https://ivhfsmd9pa.execute-api.ap-southeast-1.amazonaws.com/",
+            "rest_api_id": "ivhfsmd9pa",
+            "stage_description": null,
+            "stage_name": null,
+            "triggers": {
+              "redeployment": "4e47d2da9a58f3a847b57ddd8bafe17f45f6a25b"
+            },
+            "variables": null
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "module.api_gateway.aws_api_gateway_integration.accounts_get",
+            "module.api_gateway.aws_api_gateway_integration.accounts_post",
+            "module.api_gateway.aws_api_gateway_integration.auth_post",
+            "module.api_gateway.aws_api_gateway_integration.kyc_post",
+            "module.api_gateway.aws_api_gateway_integration.transactions_post",
+            "module.api_gateway.aws_api_gateway_method.accounts_get",
+            "module.api_gateway.aws_api_gateway_method.accounts_post",
+            "module.api_gateway.aws_api_gateway_method.auth_post",
+            "module.api_gateway.aws_api_gateway_method.kyc_post",
+            "module.api_gateway.aws_api_gateway_method.transactions_post",
+            "module.api_gateway.aws_api_gateway_resource.accounts",
+            "module.api_gateway.aws_api_gateway_resource.auth",
+            "module.api_gateway.aws_api_gateway_resource.kyc",
+            "module.api_gateway.aws_api_gateway_resource.transactions",
+            "module.api_gateway.aws_api_gateway_rest_api.banking_api",
+            "module.compute.aws_lambda_function.service",
+            "module.compute.data.archive_file.placeholder_zip",
+            "module.compute.local_file.placeholder_handler",
+            "module.iam.aws_iam_role.lambda_execution",
+            "module.messaging.aws_sns_topic.notifications",
+            "module.messaging.aws_sqs_queue.transaction_dlq",
+            "module.messaging.aws_sqs_queue.transactions"
+          ],
+          "create_before_destroy": true
+        }
+      ]
+    },
+    {
+      "module": "module.api_gateway",
+      "mode": "managed",
+      "type": "aws_api_gateway_integration",
+      "name": "accounts_get",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "cache_key_parameters": null,
+            "cache_namespace": "6htkqxjutc",
+            "connection_id": "",
+            "connection_type": "INTERNET",
+            "content_handling": "",
+            "credentials": "",
+            "http_method": "GET",
+            "id": "agi-ivhfsmd9pa-6htkqxjutc-GET",
+            "integration_http_method": "POST",
+            "passthrough_behavior": "WHEN_NO_MATCH",
+            "request_parameters": null,
+            "request_templates": null,
+            "resource_id": "6htkqxjutc",
+            "rest_api_id": "ivhfsmd9pa",
+            "timeout_milliseconds": 29000,
+            "tls_config": [],
+            "type": "AWS_PROXY",
+            "uri": "arn:aws:apigateway:ap-southeast-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-southeast-1:000000000000:function:cloud-bank-accounts/invocations"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "module.api_gateway.aws_api_gateway_method.accounts_get",
+            "module.api_gateway.aws_api_gateway_resource.accounts",
+            "module.api_gateway.aws_api_gateway_rest_api.banking_api",
+            "module.compute.aws_lambda_function.service",
+            "module.compute.data.archive_file.placeholder_zip",
+            "module.compute.local_file.placeholder_handler",
+            "module.iam.aws_iam_role.lambda_execution",
+            "module.messaging.aws_sns_topic.notifications",
+            "module.messaging.aws_sqs_queue.transaction_dlq",
+            "module.messaging.aws_sqs_queue.transactions"
+          ],
+          "create_before_destroy": true
+        }
+      ]
+    },
+    {
+      "module": "module.api_gateway",
+      "mode": "managed",
+      "type": "aws_api_gateway_integration",
+      "name": "accounts_post",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "cache_key_parameters": null,
+            "cache_namespace": "6htkqxjutc",
+            "connection_id": "",
+            "connection_type": "INTERNET",
+            "content_handling": "",
+            "credentials": "",
+            "http_method": "POST",
+            "id": "agi-ivhfsmd9pa-6htkqxjutc-POST",
+            "integration_http_method": "POST",
+            "passthrough_behavior": "WHEN_NO_MATCH",
+            "request_parameters": null,
+            "request_templates": null,
+            "resource_id": "6htkqxjutc",
+            "rest_api_id": "ivhfsmd9pa",
+            "timeout_milliseconds": 29000,
+            "tls_config": [],
+            "type": "AWS_PROXY",
+            "uri": "arn:aws:apigateway:ap-southeast-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-southeast-1:000000000000:function:cloud-bank-accounts/invocations"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "module.api_gateway.aws_api_gateway_method.accounts_post",
+            "module.api_gateway.aws_api_gateway_resource.accounts",
+            "module.api_gateway.aws_api_gateway_rest_api.banking_api",
+            "module.compute.aws_lambda_function.service",
+            "module.compute.data.archive_file.placeholder_zip",
+            "module.compute.local_file.placeholder_handler",
+            "module.iam.aws_iam_role.lambda_execution",
+            "module.messaging.aws_sns_topic.notifications",
+            "module.messaging.aws_sqs_queue.transaction_dlq",
+            "module.messaging.aws_sqs_queue.transactions"
+          ],
+          "create_before_destroy": true
+        }
+      ]
+    },
+    {
+      "module": "module.api_gateway",
+      "mode": "managed",
+      "type": "aws_api_gateway_integration",
+      "name": "auth_post",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "cache_key_parameters": null,
+            "cache_namespace": "mkz42g8sia",
+            "connection_id": "",
+            "connection_type": "INTERNET",
+            "content_handling": "",
+            "credentials": "",
+            "http_method": "POST",
+            "id": "agi-ivhfsmd9pa-mkz42g8sia-POST",
+            "integration_http_method": "POST",
+            "passthrough_behavior": "WHEN_NO_MATCH",
+            "request_parameters": null,
+            "request_templates": null,
+            "resource_id": "mkz42g8sia",
+            "rest_api_id": "ivhfsmd9pa",
+            "timeout_milliseconds": 29000,
+            "tls_config": [],
+            "type": "AWS_PROXY",
+            "uri": "arn:aws:apigateway:ap-southeast-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-southeast-1:000000000000:function:cloud-bank-auth/invocations"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "module.api_gateway.aws_api_gateway_method.auth_post",
+            "module.api_gateway.aws_api_gateway_resource.auth",
+            "module.api_gateway.aws_api_gateway_rest_api.banking_api",
+            "module.compute.aws_lambda_function.service",
+            "module.compute.data.archive_file.placeholder_zip",
+            "module.compute.local_file.placeholder_handler",
+            "module.iam.aws_iam_role.lambda_execution",
+            "module.messaging.aws_sns_topic.notifications",
+            "module.messaging.aws_sqs_queue.transaction_dlq",
+            "module.messaging.aws_sqs_queue.transactions"
+          ],
+          "create_before_destroy": true
+        }
+      ]
+    },
+    {
+      "module": "module.api_gateway",
+      "mode": "managed",
+      "type": "aws_api_gateway_integration",
+      "name": "kyc_post",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "cache_key_parameters": null,
+            "cache_namespace": "is2h8mkqky",
+            "connection_id": "",
+            "connection_type": "INTERNET",
+            "content_handling": "",
+            "credentials": "",
+            "http_method": "POST",
+            "id": "agi-ivhfsmd9pa-is2h8mkqky-POST",
+            "integration_http_method": "POST",
+            "passthrough_behavior": "WHEN_NO_MATCH",
+            "request_parameters": null,
+            "request_templates": null,
+            "resource_id": "is2h8mkqky",
+            "rest_api_id": "ivhfsmd9pa",
+            "timeout_milliseconds": 29000,
+            "tls_config": [],
+            "type": "AWS_PROXY",
+            "uri": "arn:aws:apigateway:ap-southeast-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-southeast-1:000000000000:function:cloud-bank-kyc/invocations"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "module.api_gateway.aws_api_gateway_method.kyc_post",
+            "module.api_gateway.aws_api_gateway_resource.kyc",
+            "module.api_gateway.aws_api_gateway_rest_api.banking_api",
+            "module.compute.aws_lambda_function.service",
+            "module.compute.data.archive_file.placeholder_zip",
+            "module.compute.local_file.placeholder_handler",
+            "module.iam.aws_iam_role.lambda_execution",
+            "module.messaging.aws_sns_topic.notifications",
+            "module.messaging.aws_sqs_queue.transaction_dlq",
+            "module.messaging.aws_sqs_queue.transactions"
+          ],
+          "create_before_destroy": true
+        }
+      ]
+    },
+    {
+      "module": "module.api_gateway",
+      "mode": "managed",
+      "type": "aws_api_gateway_integration",
+      "name": "transactions_post",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "cache_key_parameters": null,
+            "cache_namespace": "womdzwek1r",
+            "connection_id": "",
+            "connection_type": "INTERNET",
+            "content_handling": "",
+            "credentials": "",
+            "http_method": "POST",
+            "id": "agi-ivhfsmd9pa-womdzwek1r-POST",
+            "integration_http_method": "POST",
+            "passthrough_behavior": "WHEN_NO_MATCH",
+            "request_parameters": null,
+            "request_templates": null,
+            "resource_id": "womdzwek1r",
+            "rest_api_id": "ivhfsmd9pa",
+            "timeout_milliseconds": 29000,
+            "tls_config": [],
+            "type": "AWS_PROXY",
+            "uri": "arn:aws:apigateway:ap-southeast-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-southeast-1:000000000000:function:cloud-bank-transactions/invocations"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "module.api_gateway.aws_api_gateway_method.transactions_post",
+            "module.api_gateway.aws_api_gateway_resource.transactions",
+            "module.api_gateway.aws_api_gateway_rest_api.banking_api",
+            "module.compute.aws_lambda_function.service",
+            "module.compute.data.archive_file.placeholder_zip",
+            "module.compute.local_file.placeholder_handler",
+            "module.iam.aws_iam_role.lambda_execution",
+            "module.messaging.aws_sns_topic.notifications",
+            "module.messaging.aws_sqs_queue.transaction_dlq",
+            "module.messaging.aws_sqs_queue.transactions"
+          ],
+          "create_before_destroy": true
+        }
+      ]
+    },
+    {
+      "module": "module.api_gateway",
+      "mode": "managed",
+      "type": "aws_api_gateway_method",
+      "name": "accounts_get",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "api_key_required": false,
+            "authorization": "NONE",
+            "authorization_scopes": [],
+            "authorizer_id": "",
+            "http_method": "GET",
+            "id": "agm-ivhfsmd9pa-6htkqxjutc-GET",
+            "operation_name": "",
+            "request_models": {},
+            "request_parameters": {},
+            "request_validator_id": "",
+            "resource_id": "6htkqxjutc",
+            "rest_api_id": "ivhfsmd9pa"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "module.api_gateway.aws_api_gateway_resource.accounts",
+            "module.api_gateway.aws_api_gateway_rest_api.banking_api"
+          ],
+          "create_before_destroy": true
+        }
+      ]
+    },
+    {
+      "module": "module.api_gateway",
+      "mode": "managed",
+      "type": "aws_api_gateway_method",
+      "name": "accounts_post",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "api_key_required": false,
+            "authorization": "NONE",
+            "authorization_scopes": [],
+            "authorizer_id": "",
+            "http_method": "POST",
+            "id": "agm-ivhfsmd9pa-6htkqxjutc-POST",
+            "operation_name": "",
+            "request_models": {},
+            "request_parameters": {},
+            "request_validator_id": "",
+            "resource_id": "6htkqxjutc",
+            "rest_api_id": "ivhfsmd9pa"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "module.api_gateway.aws_api_gateway_resource.accounts",
+            "module.api_gateway.aws_api_gateway_rest_api.banking_api"
+          ],
+          "create_before_destroy": true
+        }
+      ]
+    },
+    {
+      "module": "module.api_gateway",
+      "mode": "managed",
+      "type": "aws_api_gateway_method",
+      "name": "auth_post",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "api_key_required": false,
+            "authorization": "NONE",
+            "authorization_scopes": [],
+            "authorizer_id": "",
+            "http_method": "POST",
+            "id": "agm-ivhfsmd9pa-mkz42g8sia-POST",
+            "operation_name": "",
+            "request_models": {},
+            "request_parameters": {},
+            "request_validator_id": "",
+            "resource_id": "mkz42g8sia",
+            "rest_api_id": "ivhfsmd9pa"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "module.api_gateway.aws_api_gateway_resource.auth",
+            "module.api_gateway.aws_api_gateway_rest_api.banking_api"
+          ],
+          "create_before_destroy": true
+        }
+      ]
+    },
+    {
+      "module": "module.api_gateway",
+      "mode": "managed",
+      "type": "aws_api_gateway_method",
+      "name": "kyc_post",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "api_key_required": false,
+            "authorization": "NONE",
+            "authorization_scopes": [],
+            "authorizer_id": "",
+            "http_method": "POST",
+            "id": "agm-ivhfsmd9pa-is2h8mkqky-POST",
+            "operation_name": "",
+            "request_models": {},
+            "request_parameters": {},
+            "request_validator_id": "",
+            "resource_id": "is2h8mkqky",
+            "rest_api_id": "ivhfsmd9pa"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "module.api_gateway.aws_api_gateway_resource.kyc",
+            "module.api_gateway.aws_api_gateway_rest_api.banking_api"
+          ],
+          "create_before_destroy": true
+        }
+      ]
+    },
+    {
+      "module": "module.api_gateway",
+      "mode": "managed",
+      "type": "aws_api_gateway_method",
+      "name": "transactions_post",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "api_key_required": false,
+            "authorization": "NONE",
+            "authorization_scopes": [],
+            "authorizer_id": "",
+            "http_method": "POST",
+            "id": "agm-ivhfsmd9pa-womdzwek1r-POST",
+            "operation_name": "",
+            "request_models": {},
+            "request_parameters": {},
+            "request_validator_id": "",
+            "resource_id": "womdzwek1r",
+            "rest_api_id": "ivhfsmd9pa"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "module.api_gateway.aws_api_gateway_resource.transactions",
+            "module.api_gateway.aws_api_gateway_rest_api.banking_api"
+          ],
+          "create_before_destroy": true
+        }
+      ]
+    },
+    {
+      "module": "module.api_gateway",
+      "mode": "managed",
+      "type": "aws_api_gateway_resource",
+      "name": "accounts",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "id": "6htkqxjutc",
+            "parent_id": "p9unjg4idy",
+            "path": "/accounts",
+            "path_part": "accounts",
+            "rest_api_id": "ivhfsmd9pa"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "module.api_gateway.aws_api_gateway_rest_api.banking_api"
+          ],
+          "create_before_destroy": true
+        }
+      ]
+    },
+    {
+      "module": "module.api_gateway",
+      "mode": "managed",
+      "type": "aws_api_gateway_resource",
+      "name": "auth",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "id": "mkz42g8sia",
+            "parent_id": "p9unjg4idy",
+            "path": "/auth",
+            "path_part": "auth",
+            "rest_api_id": "ivhfsmd9pa"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "module.api_gateway.aws_api_gateway_rest_api.banking_api"
+          ],
+          "create_before_destroy": true
+        }
+      ]
+    },
+    {
+      "module": "module.api_gateway",
+      "mode": "managed",
+      "type": "aws_api_gateway_resource",
+      "name": "kyc",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "id": "is2h8mkqky",
+            "parent_id": "p9unjg4idy",
+            "path": "/kyc",
+            "path_part": "kyc",
+            "rest_api_id": "ivhfsmd9pa"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "module.api_gateway.aws_api_gateway_rest_api.banking_api"
+          ],
+          "create_before_destroy": true
+        }
+      ]
+    },
+    {
+      "module": "module.api_gateway",
+      "mode": "managed",
+      "type": "aws_api_gateway_resource",
+      "name": "transactions",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "id": "womdzwek1r",
+            "parent_id": "p9unjg4idy",
+            "path": "/transactions",
+            "path_part": "transactions",
+            "rest_api_id": "ivhfsmd9pa"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "module.api_gateway.aws_api_gateway_rest_api.banking_api"
+          ],
+          "create_before_destroy": true
+        }
+      ]
+    },
+    {
+      "module": "module.api_gateway",
+      "mode": "managed",
+      "type": "aws_api_gateway_rest_api",
+      "name": "banking_api",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "api_key_source": "HEADER",
+            "arn": "arn:aws:apigateway:ap-southeast-1::/restapis/ivhfsmd9pa",
+            "binary_media_types": [],
+            "body": null,
+            "created_date": "2026-03-19T17:04:59Z",
+            "description": "NeoBank SG — Digital Banking REST API",
+            "disable_execute_api_endpoint": false,
+            "endpoint_configuration": [
+              {
+                "ip_address_type": "ipv4",
+                "types": [
+                  "REGIONAL"
+                ],
+                "vpc_endpoint_ids": []
+              }
+            ],
+            "execution_arn": "arn:aws:execute-api:ap-southeast-1::ivhfsmd9pa",
+            "fail_on_warnings": null,
+            "id": "ivhfsmd9pa",
+            "minimum_compression_size": "",
+            "name": "cloud-bank-api",
+            "parameters": null,
+            "policy": "",
+            "put_rest_api_mode": null,
+            "root_resource_id": "p9unjg4idy",
+            "tags": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Project": "cloud-bank",
+              "Region": "ap-southeast-1"
+            },
+            "tags_all": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Project": "cloud-bank",
+              "Region": "ap-southeast-1"
+            }
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "create_before_destroy": true
+        }
+      ]
+    },
+    {
+      "module": "module.api_gateway",
+      "mode": "managed",
+      "type": "aws_api_gateway_stage",
+      "name": "main",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "access_log_settings": [],
+            "arn": "arn:aws:apigateway:ap-southeast-1::/restapis/ivhfsmd9pa/stages/localstack",
+            "cache_cluster_enabled": false,
+            "cache_cluster_size": "",
+            "canary_settings": [],
+            "client_certificate_id": "",
+            "deployment_id": "e8zc0in6ow",
+            "description": "",
+            "documentation_version": "",
+            "execution_arn": "arn:aws:execute-api:ap-southeast-1::ivhfsmd9pa/localstack",
+            "id": "ags-ivhfsmd9pa-localstack",
+            "invoke_url": "https://ivhfsmd9pa.execute-api.ap-southeast-1.amazonaws.com/localstack",
+            "rest_api_id": "ivhfsmd9pa",
+            "stage_name": "localstack",
+            "tags": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Project": "cloud-bank",
+              "Region": "ap-southeast-1"
+            },
+            "tags_all": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Project": "cloud-bank",
+              "Region": "ap-southeast-1"
+            },
+            "variables": null,
+            "web_acl_arn": "",
+            "xray_tracing_enabled": false
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "module.api_gateway.aws_api_gateway_deployment.main",
+            "module.api_gateway.aws_api_gateway_integration.accounts_get",
+            "module.api_gateway.aws_api_gateway_integration.accounts_post",
+            "module.api_gateway.aws_api_gateway_integration.auth_post",
+            "module.api_gateway.aws_api_gateway_integration.kyc_post",
+            "module.api_gateway.aws_api_gateway_integration.transactions_post",
+            "module.api_gateway.aws_api_gateway_method.accounts_get",
+            "module.api_gateway.aws_api_gateway_method.accounts_post",
+            "module.api_gateway.aws_api_gateway_method.auth_post",
+            "module.api_gateway.aws_api_gateway_method.kyc_post",
+            "module.api_gateway.aws_api_gateway_method.transactions_post",
+            "module.api_gateway.aws_api_gateway_resource.accounts",
+            "module.api_gateway.aws_api_gateway_resource.auth",
+            "module.api_gateway.aws_api_gateway_resource.kyc",
+            "module.api_gateway.aws_api_gateway_resource.transactions",
+            "module.api_gateway.aws_api_gateway_rest_api.banking_api",
+            "module.compute.aws_lambda_function.service",
+            "module.compute.data.archive_file.placeholder_zip",
+            "module.compute.local_file.placeholder_handler",
+            "module.iam.aws_iam_role.lambda_execution",
+            "module.messaging.aws_sns_topic.notifications",
+            "module.messaging.aws_sqs_queue.transaction_dlq",
+            "module.messaging.aws_sqs_queue.transactions"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.compute",
+      "mode": "data",
+      "type": "archive_file",
+      "name": "placeholder_zip",
+      "provider": "provider[\"registry.terraform.io/hashicorp/archive\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "exclude_symlink_directories": null,
+            "excludes": null,
+            "id": "a2e8eee477db4dffabc1e2ecbbcd4ed2c262eb3f",
+            "output_base64sha256": "hQgNcDVYnPf4hVLwRwyMpctvpogo5xtNLSOGRd80cpg=",
+            "output_base64sha512": "vADfQcq7FJGQlWi7XlM6UJSCqJTqGN7CHzqHQs5f8TUkLws4lyeSQj+Ds9Y9Ou/FN4sMaozson7K/AyUsvvimQ==",
+            "output_file_mode": null,
+            "output_md5": "fe353cb3f84a265d84a37da195a11cc4",
+            "output_path": "modules/compute/builds/placeholder.zip",
+            "output_sha": "a2e8eee477db4dffabc1e2ecbbcd4ed2c262eb3f",
+            "output_sha256": "85080d7035589cf7f88552f0470c8ca5cb6fa68828e71b4d2d238645df347298",
+            "output_sha512": "bc00df41cabb1491909568bb5e533a509482a894ea18dec21f3a8742ce5ff135242f0b38972792423f83b3d63d3aefc5378b0c6a8ceca27ecafc0c94b2fbe299",
+            "output_size": 224,
+            "source": [],
+            "source_content": null,
+            "source_content_filename": null,
+            "source_dir": null,
+            "source_file": "modules/compute/builds/handler.py",
+            "type": "zip"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0
+        }
+      ]
+    },
+    {
+      "module": "module.compute",
+      "mode": "managed",
+      "type": "aws_lambda_event_source_mapping",
+      "name": "transaction_queue_trigger",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "amazon_managed_kafka_event_source_config": [],
+            "arn": "arn:aws:lambda:ap-southeast-1:000000000000:event-source-mapping:0d6854bc-1bb1-44bf-82bf-497d5f9c79c1",
+            "batch_size": 10,
+            "bisect_batch_on_function_error": false,
+            "destination_config": [],
+            "document_db_event_source_config": [],
+            "enabled": true,
+            "event_source_arn": "arn:aws:sqs:ap-southeast-1:000000000000:cloud-bank-transactions-local",
+            "filter_criteria": [],
+            "function_arn": "arn:aws:lambda:ap-southeast-1:000000000000:function:cloud-bank-transactions",
+            "function_name": "arn:aws:lambda:ap-southeast-1:000000000000:function:cloud-bank-transactions",
+            "function_response_types": null,
+            "id": "0d6854bc-1bb1-44bf-82bf-497d5f9c79c1",
+            "kms_key_arn": "",
+            "last_modified": "2026-03-19T17:21:37Z",
+            "last_processing_result": "",
+            "maximum_batching_window_in_seconds": 0,
+            "maximum_record_age_in_seconds": 0,
+            "maximum_retry_attempts": 0,
+            "metrics_config": [],
+            "parallelization_factor": 0,
+            "provisioned_poller_config": [],
+            "queues": null,
+            "scaling_config": [],
+            "self_managed_event_source": [],
+            "self_managed_kafka_event_source_config": [],
+            "source_access_configuration": [],
+            "starting_position": "",
+            "starting_position_timestamp": "",
+            "state": "Enabled",
+            "state_transition_reason": "USER_INITIATED",
+            "tags": null,
+            "tags_all": {},
+            "topics": null,
+            "tumbling_window_in_seconds": 0,
+            "uuid": "0d6854bc-1bb1-44bf-82bf-497d5f9c79c1"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "module.compute.aws_lambda_function.service",
+            "module.compute.data.archive_file.placeholder_zip",
+            "module.compute.local_file.placeholder_handler",
+            "module.iam.aws_iam_role.lambda_execution",
+            "module.messaging.aws_sns_topic.notifications",
+            "module.messaging.aws_sqs_queue.transaction_dlq",
+            "module.messaging.aws_sqs_queue.transactions"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.compute",
+      "mode": "managed",
+      "type": "aws_lambda_function",
+      "name": "service",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "index_key": "accounts",
+          "schema_version": 0,
+          "attributes": {
+            "architectures": [
+              "x86_64"
+            ],
+            "arn": "arn:aws:lambda:ap-southeast-1:000000000000:function:cloud-bank-accounts",
+            "code_sha256": "hQgNcDVYnPf4hVLwRwyMpctvpogo5xtNLSOGRd80cpg=",
+            "code_signing_config_arn": "",
+            "dead_letter_config": [],
+            "description": "Account management",
+            "environment": [
+              {
+                "variables": {
+                  "AUTH_MOCK_URL": "http://localhost:5001",
+                  "DB_ENDPOINT": "localhost:5432",
+                  "ENVIRONMENT": "localstack",
+                  "NOTIFICATION_TOPIC": "arn:aws:sns:ap-southeast-1:000000000000:cloud-bank-notifications-local",
+                  "PROJECT_NAME": "cloud-bank",
+                  "TRANSACTION_QUEUE": "arn:aws:sqs:ap-southeast-1:000000000000:cloud-bank-transactions-local"
+                }
+              }
+            ],
+            "ephemeral_storage": [
+              {
+                "size": 512
+              }
+            ],
+            "file_system_config": [],
+            "filename": "modules/compute/builds/placeholder.zip",
+            "function_name": "cloud-bank-accounts",
+            "handler": "handler.lambda_handler",
+            "id": "cloud-bank-accounts",
+            "image_config": [],
+            "image_uri": "",
+            "invoke_arn": "arn:aws:apigateway:ap-southeast-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-southeast-1:000000000000:function:cloud-bank-accounts/invocations",
+            "kms_key_arn": "",
+            "last_modified": "2026-03-19T17:21:37.781354+0000",
+            "layers": null,
+            "logging_config": [
+              {
+                "application_log_level": "",
+                "log_format": "Text",
+                "log_group": "/aws/lambda/cloud-bank-accounts",
+                "system_log_level": ""
+              }
+            ],
+            "memory_size": 256,
+            "package_type": "Zip",
+            "publish": false,
+            "qualified_arn": "arn:aws:lambda:ap-southeast-1:000000000000:function:cloud-bank-accounts:$LATEST",
+            "qualified_invoke_arn": "arn:aws:apigateway:ap-southeast-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-southeast-1:000000000000:function:cloud-bank-accounts:$LATEST/invocations",
+            "replace_security_groups_on_destroy": null,
+            "replacement_security_group_ids": null,
+            "reserved_concurrent_executions": -1,
+            "role": "arn:aws:iam::000000000000:role/cloud-bank-lambda-execution-role",
+            "runtime": "python3.11",
+            "s3_bucket": null,
+            "s3_key": null,
+            "s3_object_version": null,
+            "signing_job_arn": "",
+            "signing_profile_version_arn": "",
+            "skip_destroy": false,
+            "snap_start": [],
+            "source_code_hash": "hQgNcDVYnPf4hVLwRwyMpctvpogo5xtNLSOGRd80cpg=",
+            "source_code_size": 224,
+            "tags": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Name": "cloud-bank-accounts",
+              "Project": "cloud-bank",
+              "Region": "ap-southeast-1",
+              "Service": "accounts"
+            },
+            "tags_all": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Name": "cloud-bank-accounts",
+              "Project": "cloud-bank",
+              "Region": "ap-southeast-1",
+              "Service": "accounts"
+            },
+            "timeout": 30,
+            "timeouts": null,
+            "tracing_config": [
+              {
+                "mode": "PassThrough"
+              }
+            ],
+            "version": "$LATEST",
+            "vpc_config": []
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJ1cGRhdGUiOjYwMDAwMDAwMDAwMH19",
+          "dependencies": [
+            "module.compute.data.archive_file.placeholder_zip",
+            "module.compute.local_file.placeholder_handler",
+            "module.iam.aws_iam_role.lambda_execution",
+            "module.messaging.aws_sns_topic.notifications",
+            "module.messaging.aws_sqs_queue.transaction_dlq",
+            "module.messaging.aws_sqs_queue.transactions"
+          ],
+          "create_before_destroy": true
+        },
+        {
+          "index_key": "auth",
+          "schema_version": 0,
+          "attributes": {
+            "architectures": [
+              "x86_64"
+            ],
+            "arn": "arn:aws:lambda:ap-southeast-1:000000000000:function:cloud-bank-auth",
+            "code_sha256": "hQgNcDVYnPf4hVLwRwyMpctvpogo5xtNLSOGRd80cpg=",
+            "code_signing_config_arn": "",
+            "dead_letter_config": [],
+            "description": "Authentication (wraps mock)",
+            "environment": [
+              {
+                "variables": {
+                  "AUTH_MOCK_URL": "http://localhost:5001",
+                  "DB_ENDPOINT": "localhost:5432",
+                  "ENVIRONMENT": "localstack",
+                  "NOTIFICATION_TOPIC": "arn:aws:sns:ap-southeast-1:000000000000:cloud-bank-notifications-local",
+                  "PROJECT_NAME": "cloud-bank",
+                  "TRANSACTION_QUEUE": "arn:aws:sqs:ap-southeast-1:000000000000:cloud-bank-transactions-local"
+                }
+              }
+            ],
+            "ephemeral_storage": [
+              {
+                "size": 512
+              }
+            ],
+            "file_system_config": [],
+            "filename": "modules/compute/builds/placeholder.zip",
+            "function_name": "cloud-bank-auth",
+            "handler": "handler.lambda_handler",
+            "id": "cloud-bank-auth",
+            "image_config": [],
+            "image_uri": "",
+            "invoke_arn": "arn:aws:apigateway:ap-southeast-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-southeast-1:000000000000:function:cloud-bank-auth/invocations",
+            "kms_key_arn": "",
+            "last_modified": "2026-03-19T17:21:42.945845+0000",
+            "layers": null,
+            "logging_config": [
+              {
+                "application_log_level": "",
+                "log_format": "Text",
+                "log_group": "/aws/lambda/cloud-bank-auth",
+                "system_log_level": ""
+              }
+            ],
+            "memory_size": 256,
+            "package_type": "Zip",
+            "publish": false,
+            "qualified_arn": "arn:aws:lambda:ap-southeast-1:000000000000:function:cloud-bank-auth:$LATEST",
+            "qualified_invoke_arn": "arn:aws:apigateway:ap-southeast-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-southeast-1:000000000000:function:cloud-bank-auth:$LATEST/invocations",
+            "replace_security_groups_on_destroy": null,
+            "replacement_security_group_ids": null,
+            "reserved_concurrent_executions": -1,
+            "role": "arn:aws:iam::000000000000:role/cloud-bank-lambda-execution-role",
+            "runtime": "python3.11",
+            "s3_bucket": null,
+            "s3_key": null,
+            "s3_object_version": null,
+            "signing_job_arn": "",
+            "signing_profile_version_arn": "",
+            "skip_destroy": false,
+            "snap_start": [],
+            "source_code_hash": "hQgNcDVYnPf4hVLwRwyMpctvpogo5xtNLSOGRd80cpg=",
+            "source_code_size": 224,
+            "tags": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Name": "cloud-bank-auth",
+              "Project": "cloud-bank",
+              "Region": "ap-southeast-1",
+              "Service": "auth"
+            },
+            "tags_all": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Name": "cloud-bank-auth",
+              "Project": "cloud-bank",
+              "Region": "ap-southeast-1",
+              "Service": "auth"
+            },
+            "timeout": 30,
+            "timeouts": null,
+            "tracing_config": [
+              {
+                "mode": "PassThrough"
+              }
+            ],
+            "version": "$LATEST",
+            "vpc_config": []
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJ1cGRhdGUiOjYwMDAwMDAwMDAwMH19",
+          "dependencies": [
+            "module.compute.data.archive_file.placeholder_zip",
+            "module.compute.local_file.placeholder_handler",
+            "module.iam.aws_iam_role.lambda_execution",
+            "module.messaging.aws_sns_topic.notifications",
+            "module.messaging.aws_sqs_queue.transaction_dlq",
+            "module.messaging.aws_sqs_queue.transactions"
+          ],
+          "create_before_destroy": true
+        },
+        {
+          "index_key": "kyc",
+          "schema_version": 0,
+          "attributes": {
+            "architectures": [
+              "x86_64"
+            ],
+            "arn": "arn:aws:lambda:ap-southeast-1:000000000000:function:cloud-bank-kyc",
+            "code_sha256": "hQgNcDVYnPf4hVLwRwyMpctvpogo5xtNLSOGRd80cpg=",
+            "code_signing_config_arn": "",
+            "dead_letter_config": [],
+            "description": "KYC verification",
+            "environment": [
+              {
+                "variables": {
+                  "AUTH_MOCK_URL": "http://localhost:5001",
+                  "DB_ENDPOINT": "localhost:5432",
+                  "ENVIRONMENT": "localstack",
+                  "NOTIFICATION_TOPIC": "arn:aws:sns:ap-southeast-1:000000000000:cloud-bank-notifications-local",
+                  "PROJECT_NAME": "cloud-bank",
+                  "TRANSACTION_QUEUE": "arn:aws:sqs:ap-southeast-1:000000000000:cloud-bank-transactions-local"
+                }
+              }
+            ],
+            "ephemeral_storage": [
+              {
+                "size": 512
+              }
+            ],
+            "file_system_config": [],
+            "filename": "modules/compute/builds/placeholder.zip",
+            "function_name": "cloud-bank-kyc",
+            "handler": "handler.lambda_handler",
+            "id": "cloud-bank-kyc",
+            "image_config": [],
+            "image_uri": "",
+            "invoke_arn": "arn:aws:apigateway:ap-southeast-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-southeast-1:000000000000:function:cloud-bank-kyc/invocations",
+            "kms_key_arn": "",
+            "last_modified": "2026-03-19T17:20:34.486309+0000",
+            "layers": null,
+            "logging_config": [
+              {
+                "application_log_level": "",
+                "log_format": "Text",
+                "log_group": "/aws/lambda/cloud-bank-kyc",
+                "system_log_level": ""
+              }
+            ],
+            "memory_size": 256,
+            "package_type": "Zip",
+            "publish": false,
+            "qualified_arn": "arn:aws:lambda:ap-southeast-1:000000000000:function:cloud-bank-kyc:$LATEST",
+            "qualified_invoke_arn": "arn:aws:apigateway:ap-southeast-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-southeast-1:000000000000:function:cloud-bank-kyc:$LATEST/invocations",
+            "replace_security_groups_on_destroy": null,
+            "replacement_security_group_ids": null,
+            "reserved_concurrent_executions": -1,
+            "role": "arn:aws:iam::000000000000:role/cloud-bank-lambda-execution-role",
+            "runtime": "python3.11",
+            "s3_bucket": null,
+            "s3_key": null,
+            "s3_object_version": null,
+            "signing_job_arn": "",
+            "signing_profile_version_arn": "",
+            "skip_destroy": false,
+            "snap_start": [],
+            "source_code_hash": "hQgNcDVYnPf4hVLwRwyMpctvpogo5xtNLSOGRd80cpg=",
+            "source_code_size": 224,
+            "tags": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Name": "cloud-bank-kyc",
+              "Project": "cloud-bank",
+              "Region": "ap-southeast-1",
+              "Service": "kyc"
+            },
+            "tags_all": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Name": "cloud-bank-kyc",
+              "Project": "cloud-bank",
+              "Region": "ap-southeast-1",
+              "Service": "kyc"
+            },
+            "timeout": 30,
+            "timeouts": null,
+            "tracing_config": [
+              {
+                "mode": "PassThrough"
+              }
+            ],
+            "version": "$LATEST",
+            "vpc_config": []
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJ1cGRhdGUiOjYwMDAwMDAwMDAwMH19",
+          "dependencies": [
+            "module.compute.data.archive_file.placeholder_zip",
+            "module.compute.local_file.placeholder_handler",
+            "module.iam.aws_iam_role.lambda_execution",
+            "module.messaging.aws_sns_topic.notifications",
+            "module.messaging.aws_sqs_queue.transaction_dlq",
+            "module.messaging.aws_sqs_queue.transactions"
+          ],
+          "create_before_destroy": true
+        },
+        {
+          "index_key": "notifications",
+          "schema_version": 0,
+          "attributes": {
+            "architectures": [
+              "x86_64"
+            ],
+            "arn": "arn:aws:lambda:ap-southeast-1:000000000000:function:cloud-bank-notifications",
+            "code_sha256": "hQgNcDVYnPf4hVLwRwyMpctvpogo5xtNLSOGRd80cpg=",
+            "code_signing_config_arn": "",
+            "dead_letter_config": [],
+            "description": "Notification dispatch",
+            "environment": [
+              {
+                "variables": {
+                  "AUTH_MOCK_URL": "http://localhost:5001",
+                  "DB_ENDPOINT": "localhost:5432",
+                  "ENVIRONMENT": "localstack",
+                  "NOTIFICATION_TOPIC": "arn:aws:sns:ap-southeast-1:000000000000:cloud-bank-notifications-local",
+                  "PROJECT_NAME": "cloud-bank",
+                  "TRANSACTION_QUEUE": "arn:aws:sqs:ap-southeast-1:000000000000:cloud-bank-transactions-local"
+                }
+              }
+            ],
+            "ephemeral_storage": [
+              {
+                "size": 512
+              }
+            ],
+            "file_system_config": [],
+            "filename": "modules/compute/builds/placeholder.zip",
+            "function_name": "cloud-bank-notifications",
+            "handler": "handler.lambda_handler",
+            "id": "cloud-bank-notifications",
+            "image_config": [],
+            "image_uri": "",
+            "invoke_arn": "arn:aws:apigateway:ap-southeast-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-southeast-1:000000000000:function:cloud-bank-notifications/invocations",
+            "kms_key_arn": "",
+            "last_modified": "2026-03-19T17:21:48.083057+0000",
+            "layers": null,
+            "logging_config": [
+              {
+                "application_log_level": "",
+                "log_format": "Text",
+                "log_group": "/aws/lambda/cloud-bank-notifications",
+                "system_log_level": ""
+              }
+            ],
+            "memory_size": 256,
+            "package_type": "Zip",
+            "publish": false,
+            "qualified_arn": "arn:aws:lambda:ap-southeast-1:000000000000:function:cloud-bank-notifications:$LATEST",
+            "qualified_invoke_arn": "arn:aws:apigateway:ap-southeast-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-southeast-1:000000000000:function:cloud-bank-notifications:$LATEST/invocations",
+            "replace_security_groups_on_destroy": null,
+            "replacement_security_group_ids": null,
+            "reserved_concurrent_executions": -1,
+            "role": "arn:aws:iam::000000000000:role/cloud-bank-lambda-execution-role",
+            "runtime": "python3.11",
+            "s3_bucket": null,
+            "s3_key": null,
+            "s3_object_version": null,
+            "signing_job_arn": "",
+            "signing_profile_version_arn": "",
+            "skip_destroy": false,
+            "snap_start": [],
+            "source_code_hash": "hQgNcDVYnPf4hVLwRwyMpctvpogo5xtNLSOGRd80cpg=",
+            "source_code_size": 224,
+            "tags": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Name": "cloud-bank-notifications",
+              "Project": "cloud-bank",
+              "Region": "ap-southeast-1",
+              "Service": "notifications"
+            },
+            "tags_all": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Name": "cloud-bank-notifications",
+              "Project": "cloud-bank",
+              "Region": "ap-southeast-1",
+              "Service": "notifications"
+            },
+            "timeout": 30,
+            "timeouts": null,
+            "tracing_config": [
+              {
+                "mode": "PassThrough"
+              }
+            ],
+            "version": "$LATEST",
+            "vpc_config": []
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJ1cGRhdGUiOjYwMDAwMDAwMDAwMH19",
+          "dependencies": [
+            "module.compute.data.archive_file.placeholder_zip",
+            "module.compute.local_file.placeholder_handler",
+            "module.iam.aws_iam_role.lambda_execution",
+            "module.messaging.aws_sns_topic.notifications",
+            "module.messaging.aws_sqs_queue.transaction_dlq",
+            "module.messaging.aws_sqs_queue.transactions"
+          ],
+          "create_before_destroy": true
+        },
+        {
+          "index_key": "transactions",
+          "schema_version": 0,
+          "attributes": {
+            "architectures": [
+              "x86_64"
+            ],
+            "arn": "arn:aws:lambda:ap-southeast-1:000000000000:function:cloud-bank-transactions",
+            "code_sha256": "hQgNcDVYnPf4hVLwRwyMpctvpogo5xtNLSOGRd80cpg=",
+            "code_signing_config_arn": "",
+            "dead_letter_config": [],
+            "description": "Transaction processing",
+            "environment": [
+              {
+                "variables": {
+                  "AUTH_MOCK_URL": "http://localhost:5001",
+                  "DB_ENDPOINT": "localhost:5432",
+                  "ENVIRONMENT": "localstack",
+                  "NOTIFICATION_TOPIC": "arn:aws:sns:ap-southeast-1:000000000000:cloud-bank-notifications-local",
+                  "PROJECT_NAME": "cloud-bank",
+                  "TRANSACTION_QUEUE": "arn:aws:sqs:ap-southeast-1:000000000000:cloud-bank-transactions-local"
+                }
+              }
+            ],
+            "ephemeral_storage": [
+              {
+                "size": 512
+              }
+            ],
+            "file_system_config": [],
+            "filename": "modules/compute/builds/placeholder.zip",
+            "function_name": "cloud-bank-transactions",
+            "handler": "handler.lambda_handler",
+            "id": "cloud-bank-transactions",
+            "image_config": [],
+            "image_uri": "",
+            "invoke_arn": "arn:aws:apigateway:ap-southeast-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-southeast-1:000000000000:function:cloud-bank-transactions/invocations",
+            "kms_key_arn": "",
+            "last_modified": "2026-03-19T17:21:32.611226+0000",
+            "layers": null,
+            "logging_config": [
+              {
+                "application_log_level": "",
+                "log_format": "Text",
+                "log_group": "/aws/lambda/cloud-bank-transactions",
+                "system_log_level": ""
+              }
+            ],
+            "memory_size": 256,
+            "package_type": "Zip",
+            "publish": false,
+            "qualified_arn": "arn:aws:lambda:ap-southeast-1:000000000000:function:cloud-bank-transactions:$LATEST",
+            "qualified_invoke_arn": "arn:aws:apigateway:ap-southeast-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ap-southeast-1:000000000000:function:cloud-bank-transactions:$LATEST/invocations",
+            "replace_security_groups_on_destroy": null,
+            "replacement_security_group_ids": null,
+            "reserved_concurrent_executions": -1,
+            "role": "arn:aws:iam::000000000000:role/cloud-bank-lambda-execution-role",
+            "runtime": "python3.11",
+            "s3_bucket": null,
+            "s3_key": null,
+            "s3_object_version": null,
+            "signing_job_arn": "",
+            "signing_profile_version_arn": "",
+            "skip_destroy": false,
+            "snap_start": [],
+            "source_code_hash": "hQgNcDVYnPf4hVLwRwyMpctvpogo5xtNLSOGRd80cpg=",
+            "source_code_size": 224,
+            "tags": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Name": "cloud-bank-transactions",
+              "Project": "cloud-bank",
+              "Region": "ap-southeast-1",
+              "Service": "transactions"
+            },
+            "tags_all": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Name": "cloud-bank-transactions",
+              "Project": "cloud-bank",
+              "Region": "ap-southeast-1",
+              "Service": "transactions"
+            },
+            "timeout": 30,
+            "timeouts": null,
+            "tracing_config": [
+              {
+                "mode": "PassThrough"
+              }
+            ],
+            "version": "$LATEST",
+            "vpc_config": []
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6NjAwMDAwMDAwMDAwLCJ1cGRhdGUiOjYwMDAwMDAwMDAwMH19",
+          "dependencies": [
+            "module.compute.data.archive_file.placeholder_zip",
+            "module.compute.local_file.placeholder_handler",
+            "module.iam.aws_iam_role.lambda_execution",
+            "module.messaging.aws_sns_topic.notifications",
+            "module.messaging.aws_sqs_queue.transaction_dlq",
+            "module.messaging.aws_sqs_queue.transactions"
+          ],
+          "create_before_destroy": true
+        }
+      ]
+    },
+    {
+      "module": "module.compute",
+      "mode": "managed",
+      "type": "local_file",
+      "name": "placeholder_handler",
+      "provider": "provider[\"registry.terraform.io/hashicorp/local\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "content": "def lambda_handler(event, context):\n    return {'statusCode': 200, 'body': 'placeholder'}\n",
+            "content_base64": null,
+            "content_base64sha256": "fKXYhhNps93UBWDAyDjLWmpfGJoOAsROmSu1VKFZUSg=",
+            "content_base64sha512": "nF+vFz4AmwFQKF19Rd1klW7S+UqXAgjdnpVASdoF4qdvWzGG00pxIHxKpi+DqcGKFRf8zKmOZuGH47KumAn2ew==",
+            "content_md5": "6089737786c8f80781d668987bf382de",
+            "content_sha1": "f7e456e88b028af3e4f84f4949d55366ce957713",
+            "content_sha256": "7ca5d8861369b3ddd40560c0c838cb5a6a5f189a0e02c44e992bb554a1595128",
+            "content_sha512": "9c5faf173e009b0150285d7d45dd64956ed2f94a970208dd9e954049da05e2a76f5b3186d34a71207c4aa62f83a9c18a1517fccca98e66e187e3b2ae9809f67b",
+            "directory_permission": "0777",
+            "file_permission": "0777",
+            "filename": "modules/compute/builds/handler.py",
+            "id": "f7e456e88b028af3e4f84f4949d55366ce957713",
+            "sensitive_content": null,
+            "source": null
+          },
+          "sensitive_attributes": [
+            [
+              {
+                "type": "get_attr",
+                "value": "sensitive_content"
+              }
+            ]
+          ],
+          "identity_schema_version": 0,
+          "create_before_destroy": true
+        }
+      ]
+    },
+    {
+      "module": "module.database",
+      "mode": "managed",
+      "type": "aws_dynamodb_table",
+      "name": "accounts",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 1,
+          "attributes": {
+            "arn": "arn:aws:dynamodb:ap-southeast-1:000000000000:table/cloud-bank-accounts",
+            "attribute": [
+              {
+                "name": "account_id",
+                "type": "S"
+              },
+              {
+                "name": "user_id",
+                "type": "S"
+              }
+            ],
+            "billing_mode": "PAY_PER_REQUEST",
+            "deletion_protection_enabled": false,
+            "global_secondary_index": [
+              {
+                "hash_key": "user_id",
+                "name": "UserIdIndex",
+                "non_key_attributes": [],
+                "on_demand_throughput": [],
+                "projection_type": "ALL",
+                "range_key": "",
+                "read_capacity": 0,
+                "write_capacity": 0
+              }
+            ],
+            "hash_key": "account_id",
+            "id": "cloud-bank-accounts",
+            "import_table": [],
+            "local_secondary_index": [],
+            "name": "cloud-bank-accounts",
+            "on_demand_throughput": [],
+            "point_in_time_recovery": [
+              {
+                "enabled": false,
+                "recovery_period_in_days": 0
+              }
+            ],
+            "range_key": null,
+            "read_capacity": 0,
+            "replica": [],
+            "restore_date_time": null,
+            "restore_source_name": null,
+            "restore_source_table_arn": null,
+            "restore_to_latest_time": null,
+            "server_side_encryption": [],
+            "stream_arn": "",
+            "stream_enabled": false,
+            "stream_label": "",
+            "stream_view_type": "",
+            "table_class": "STANDARD",
+            "tags": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Name": "cloud-bank-accounts",
+              "Project": "cloud-bank",
+              "Purpose": "Core bank account records (replaces RDS in local sim)",
+              "Region": "ap-southeast-1"
+            },
+            "tags_all": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Name": "cloud-bank-accounts",
+              "Project": "cloud-bank",
+              "Purpose": "Core bank account records (replaces RDS in local sim)",
+              "Region": "ap-southeast-1"
+            },
+            "timeouts": null,
+            "ttl": [
+              {
+                "attribute_name": "",
+                "enabled": false
+              }
+            ],
+            "write_capacity": 0
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxODAwMDAwMDAwMDAwLCJkZWxldGUiOjYwMDAwMDAwMDAwMCwidXBkYXRlIjozNjAwMDAwMDAwMDAwfSwic2NoZW1hX3ZlcnNpb24iOiIxIn0="
+        }
+      ]
+    },
+    {
+      "module": "module.database",
+      "mode": "managed",
+      "type": "aws_dynamodb_table",
+      "name": "otp_store",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 1,
+          "attributes": {
+            "arn": "arn:aws:dynamodb:ap-southeast-1:000000000000:table/cloud-bank-otp-store",
+            "attribute": [
+              {
+                "name": "phone_number",
+                "type": "S"
+              }
+            ],
+            "billing_mode": "PAY_PER_REQUEST",
+            "deletion_protection_enabled": false,
+            "global_secondary_index": [],
+            "hash_key": "phone_number",
+            "id": "cloud-bank-otp-store",
+            "import_table": [],
+            "local_secondary_index": [],
+            "name": "cloud-bank-otp-store",
+            "on_demand_throughput": [],
+            "point_in_time_recovery": [
+              {
+                "enabled": false,
+                "recovery_period_in_days": 0
+              }
+            ],
+            "range_key": null,
+            "read_capacity": 0,
+            "replica": [],
+            "restore_date_time": null,
+            "restore_source_name": null,
+            "restore_source_table_arn": null,
+            "restore_to_latest_time": null,
+            "server_side_encryption": [],
+            "stream_arn": "",
+            "stream_enabled": false,
+            "stream_label": "",
+            "stream_view_type": "",
+            "table_class": "STANDARD",
+            "tags": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Name": "cloud-bank-otp-store",
+              "Project": "cloud-bank",
+              "Purpose": "OTP codes with automatic TTL expiry",
+              "Region": "ap-southeast-1"
+            },
+            "tags_all": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Name": "cloud-bank-otp-store",
+              "Project": "cloud-bank",
+              "Purpose": "OTP codes with automatic TTL expiry",
+              "Region": "ap-southeast-1"
+            },
+            "timeouts": null,
+            "ttl": [
+              {
+                "attribute_name": "expires_at",
+                "enabled": true
+              }
+            ],
+            "write_capacity": 0
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxODAwMDAwMDAwMDAwLCJkZWxldGUiOjYwMDAwMDAwMDAwMCwidXBkYXRlIjozNjAwMDAwMDAwMDAwfSwic2NoZW1hX3ZlcnNpb24iOiIxIn0="
+        }
+      ]
+    },
+    {
+      "module": "module.database",
+      "mode": "managed",
+      "type": "aws_dynamodb_table",
+      "name": "transaction_ledger",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 1,
+          "attributes": {
+            "arn": "arn:aws:dynamodb:ap-southeast-1:000000000000:table/cloud-bank-transaction-ledger",
+            "attribute": [
+              {
+                "name": "account_id",
+                "type": "S"
+              },
+              {
+                "name": "created_at",
+                "type": "S"
+              },
+              {
+                "name": "transaction_id",
+                "type": "S"
+              }
+            ],
+            "billing_mode": "PAY_PER_REQUEST",
+            "deletion_protection_enabled": false,
+            "global_secondary_index": [
+              {
+                "hash_key": "account_id",
+                "name": "TransactionDateIndex",
+                "non_key_attributes": [],
+                "on_demand_throughput": [],
+                "projection_type": "ALL",
+                "range_key": "created_at",
+                "read_capacity": 0,
+                "write_capacity": 0
+              }
+            ],
+            "hash_key": "account_id",
+            "id": "cloud-bank-transaction-ledger",
+            "import_table": [],
+            "local_secondary_index": [],
+            "name": "cloud-bank-transaction-ledger",
+            "on_demand_throughput": [],
+            "point_in_time_recovery": [
+              {
+                "enabled": false,
+                "recovery_period_in_days": 0
+              }
+            ],
+            "range_key": "transaction_id",
+            "read_capacity": 0,
+            "replica": [],
+            "restore_date_time": null,
+            "restore_source_name": null,
+            "restore_source_table_arn": null,
+            "restore_to_latest_time": null,
+            "server_side_encryption": [],
+            "stream_arn": "",
+            "stream_enabled": false,
+            "stream_label": "",
+            "stream_view_type": "",
+            "table_class": "STANDARD",
+            "tags": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Name": "cloud-bank-transaction-ledger",
+              "Project": "cloud-bank",
+              "Purpose": "Immutable transaction history",
+              "Region": "ap-southeast-1"
+            },
+            "tags_all": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Name": "cloud-bank-transaction-ledger",
+              "Project": "cloud-bank",
+              "Purpose": "Immutable transaction history",
+              "Region": "ap-southeast-1"
+            },
+            "timeouts": null,
+            "ttl": [
+              {
+                "attribute_name": "",
+                "enabled": false
+              }
+            ],
+            "write_capacity": 0
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxODAwMDAwMDAwMDAwLCJkZWxldGUiOjYwMDAwMDAwMDAwMCwidXBkYXRlIjozNjAwMDAwMDAwMDAwfSwic2NoZW1hX3ZlcnNpb24iOiIxIn0="
+        }
+      ]
+    },
+    {
+      "module": "module.database",
+      "mode": "managed",
+      "type": "aws_dynamodb_table",
+      "name": "user_sessions",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 1,
+          "attributes": {
+            "arn": "arn:aws:dynamodb:ap-southeast-1:000000000000:table/cloud-bank-user-sessions",
+            "attribute": [
+              {
+                "name": "session_id",
+                "type": "S"
+              },
+              {
+                "name": "user_id",
+                "type": "S"
+              }
+            ],
+            "billing_mode": "PAY_PER_REQUEST",
+            "deletion_protection_enabled": false,
+            "global_secondary_index": [
+              {
+                "hash_key": "user_id",
+                "name": "UserIdIndex",
+                "non_key_attributes": [],
+                "on_demand_throughput": [],
+                "projection_type": "ALL",
+                "range_key": "",
+                "read_capacity": 0,
+                "write_capacity": 0
+              }
+            ],
+            "hash_key": "session_id",
+            "id": "cloud-bank-user-sessions",
+            "import_table": [],
+            "local_secondary_index": [],
+            "name": "cloud-bank-user-sessions",
+            "on_demand_throughput": [],
+            "point_in_time_recovery": [
+              {
+                "enabled": false,
+                "recovery_period_in_days": 0
+              }
+            ],
+            "range_key": null,
+            "read_capacity": 0,
+            "replica": [],
+            "restore_date_time": null,
+            "restore_source_name": null,
+            "restore_source_table_arn": null,
+            "restore_to_latest_time": null,
+            "server_side_encryption": [],
+            "stream_arn": "",
+            "stream_enabled": false,
+            "stream_label": "",
+            "stream_view_type": "",
+            "table_class": "STANDARD",
+            "tags": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Name": "cloud-bank-user-sessions",
+              "Project": "cloud-bank",
+              "Purpose": "JWT session tokens with TTL auto-expiry",
+              "Region": "ap-southeast-1"
+            },
+            "tags_all": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Name": "cloud-bank-user-sessions",
+              "Project": "cloud-bank",
+              "Purpose": "JWT session tokens with TTL auto-expiry",
+              "Region": "ap-southeast-1"
+            },
+            "timeouts": null,
+            "ttl": [
+              {
+                "attribute_name": "expires_at",
+                "enabled": true
+              }
+            ],
+            "write_capacity": 0
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxODAwMDAwMDAwMDAwLCJkZWxldGUiOjYwMDAwMDAwMDAwMCwidXBkYXRlIjozNjAwMDAwMDAwMDAwfSwic2NoZW1hX3ZlcnNpb24iOiIxIn0="
+        }
+      ]
+    },
+    {
+      "module": "module.iam",
+      "mode": "managed",
+      "type": "aws_iam_policy",
+      "name": "lambda_policy",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "arn": "arn:aws:iam::000000000000:policy/cloud-bank-lambda-policy",
+            "attachment_count": 1,
+            "description": "Policy for banking Lambda functions",
+            "id": "arn:aws:iam::000000000000:policy/cloud-bank-lambda-policy",
+            "name": "cloud-bank-lambda-policy",
+            "name_prefix": "",
+            "path": "/",
+            "policy": "{\"Statement\":[{\"Action\":[\"logs:CreateLogGroup\",\"logs:CreateLogStream\",\"logs:PutLogEvents\"],\"Effect\":\"Allow\",\"Resource\":\"arn:aws:logs:*:*:*\",\"Sid\":\"CloudWatchLogs\"},{\"Action\":[\"dynamodb:GetItem\",\"dynamodb:PutItem\",\"dynamodb:UpdateItem\",\"dynamodb:DeleteItem\",\"dynamodb:Query\",\"dynamodb:Scan\"],\"Effect\":\"Allow\",\"Resource\":\"arn:aws:dynamodb:*:*:table/cloud-bank-*\",\"Sid\":\"DynamoDBAccess\"},{\"Action\":[\"sqs:SendMessage\",\"sqs:ReceiveMessage\",\"sqs:DeleteMessage\",\"sqs:GetQueueAttributes\"],\"Effect\":\"Allow\",\"Resource\":\"arn:aws:sqs:*:*:cloud-bank-*\",\"Sid\":\"SQSAccess\"},{\"Action\":[\"sns:Publish\"],\"Effect\":\"Allow\",\"Resource\":\"arn:aws:sns:*:*:cloud-bank-*\",\"Sid\":\"SNSPublish\"},{\"Action\":[\"s3:GetObject\",\"s3:PutObject\",\"s3:DeleteObject\"],\"Effect\":\"Allow\",\"Resource\":\"arn:aws:s3:::cloud-bank-*/*\",\"Sid\":\"S3Access\"},{\"Action\":[\"secretsmanager:GetSecretValue\"],\"Effect\":\"Allow\",\"Resource\":\"arn:aws:secretsmanager:*:*:secret:cloud-bank-*\",\"Sid\":\"SecretsManager\"}],\"Version\":\"2012-10-17\"}",
+            "policy_id": "AQ58NAB7UJ9EBC2NOYVAD",
+            "tags": {},
+            "tags_all": {}
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA=="
+        }
+      ]
+    },
+    {
+      "module": "module.iam",
+      "mode": "managed",
+      "type": "aws_iam_role",
+      "name": "api_gateway",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "arn": "arn:aws:iam::000000000000:role/cloud-bank-apigateway-role",
+            "assume_role_policy": "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"apigateway.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}",
+            "create_date": "2026-03-19T17:04:57Z",
+            "description": "",
+            "force_detach_policies": false,
+            "id": "cloud-bank-apigateway-role",
+            "inline_policy": [],
+            "managed_policy_arns": [],
+            "max_session_duration": 3600,
+            "name": "cloud-bank-apigateway-role",
+            "name_prefix": "",
+            "path": "/",
+            "permissions_boundary": "",
+            "tags": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Project": "cloud-bank",
+              "Region": "ap-southeast-1"
+            },
+            "tags_all": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Project": "cloud-bank",
+              "Region": "ap-southeast-1"
+            },
+            "unique_id": "AROAQAAAAAAANFTNCVEMQ"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA=="
+        }
+      ]
+    },
+    {
+      "module": "module.iam",
+      "mode": "managed",
+      "type": "aws_iam_role",
+      "name": "lambda_execution",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "arn": "arn:aws:iam::000000000000:role/cloud-bank-lambda-execution-role",
+            "assume_role_policy": "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"lambda.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}",
+            "create_date": "2026-03-19T17:04:57Z",
+            "description": "",
+            "force_detach_policies": false,
+            "id": "cloud-bank-lambda-execution-role",
+            "inline_policy": [],
+            "managed_policy_arns": [
+              "arn:aws:iam::000000000000:policy/cloud-bank-lambda-policy"
+            ],
+            "max_session_duration": 3600,
+            "name": "cloud-bank-lambda-execution-role",
+            "name_prefix": "",
+            "path": "/",
+            "permissions_boundary": "",
+            "tags": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Project": "cloud-bank",
+              "Region": "ap-southeast-1"
+            },
+            "tags_all": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Project": "cloud-bank",
+              "Region": "ap-southeast-1"
+            },
+            "unique_id": "AROAQAAAAAAAFOKZPTZHE"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "create_before_destroy": true
+        }
+      ]
+    },
+    {
+      "module": "module.iam",
+      "mode": "managed",
+      "type": "aws_iam_role_policy_attachment",
+      "name": "lambda_policy_attach",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "id": "cloud-bank-lambda-execution-role-20260319170500966300000001",
+            "policy_arn": "arn:aws:iam::000000000000:policy/cloud-bank-lambda-policy",
+            "role": "cloud-bank-lambda-execution-role"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "module.iam.aws_iam_policy.lambda_policy",
+            "module.iam.aws_iam_role.lambda_execution"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.messaging",
+      "mode": "managed",
+      "type": "aws_sns_topic",
+      "name": "notifications",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "application_failure_feedback_role_arn": "",
+            "application_success_feedback_role_arn": "",
+            "application_success_feedback_sample_rate": 0,
+            "archive_policy": "",
+            "arn": "arn:aws:sns:ap-southeast-1:000000000000:cloud-bank-notifications-local",
+            "beginning_archive_time": "",
+            "content_based_deduplication": false,
+            "delivery_policy": "",
+            "display_name": "",
+            "fifo_throughput_scope": "",
+            "fifo_topic": false,
+            "firehose_failure_feedback_role_arn": "",
+            "firehose_success_feedback_role_arn": "",
+            "firehose_success_feedback_sample_rate": 0,
+            "http_failure_feedback_role_arn": "",
+            "http_success_feedback_role_arn": "",
+            "http_success_feedback_sample_rate": 0,
+            "id": "arn:aws:sns:ap-southeast-1:000000000000:cloud-bank-notifications-local",
+            "kms_master_key_id": "",
+            "lambda_failure_feedback_role_arn": "",
+            "lambda_success_feedback_role_arn": "",
+            "lambda_success_feedback_sample_rate": 0,
+            "name": "cloud-bank-notifications-local",
+            "name_prefix": "",
+            "owner": "000000000000",
+            "policy": "{\"Id\":\"__default_policy_ID\",\"Statement\":[{\"Action\":[\"SNS:GetTopicAttributes\",\"SNS:SetTopicAttributes\",\"SNS:AddPermission\",\"SNS:RemovePermission\",\"SNS:DeleteTopic\",\"SNS:Subscribe\",\"SNS:ListSubscriptionsByTopic\",\"SNS:Publish\"],\"Condition\":{\"StringEquals\":{\"AWS:SourceOwner\":\"000000000000\"}},\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"*\"},\"Resource\":\"arn:aws:sns:ap-southeast-1:000000000000:cloud-bank-notifications-local\",\"Sid\":\"__default_statement_ID\"}],\"Version\":\"2008-10-17\"}",
+            "signature_version": 0,
+            "sqs_failure_feedback_role_arn": "",
+            "sqs_success_feedback_role_arn": "",
+            "sqs_success_feedback_sample_rate": 0,
+            "tags": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Name": "cloud-bank-notifications-local",
+              "Project": "cloud-bank",
+              "Purpose": "Push notifications to users",
+              "Region": "ap-southeast-1"
+            },
+            "tags_all": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Name": "cloud-bank-notifications-local",
+              "Project": "cloud-bank",
+              "Purpose": "Push notifications to users",
+              "Region": "ap-southeast-1"
+            },
+            "tracing_config": ""
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "create_before_destroy": true
+        }
+      ]
+    },
+    {
+      "module": "module.messaging",
+      "mode": "managed",
+      "type": "aws_sns_topic",
+      "name": "transaction_alerts",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "application_failure_feedback_role_arn": "",
+            "application_success_feedback_role_arn": "",
+            "application_success_feedback_sample_rate": 0,
+            "archive_policy": "",
+            "arn": "arn:aws:sns:ap-southeast-1:000000000000:cloud-bank-transaction-alerts",
+            "beginning_archive_time": "",
+            "content_based_deduplication": false,
+            "delivery_policy": "",
+            "display_name": "",
+            "fifo_throughput_scope": "",
+            "fifo_topic": false,
+            "firehose_failure_feedback_role_arn": "",
+            "firehose_success_feedback_role_arn": "",
+            "firehose_success_feedback_sample_rate": 0,
+            "http_failure_feedback_role_arn": "",
+            "http_success_feedback_role_arn": "",
+            "http_success_feedback_sample_rate": 0,
+            "id": "arn:aws:sns:ap-southeast-1:000000000000:cloud-bank-transaction-alerts",
+            "kms_master_key_id": "",
+            "lambda_failure_feedback_role_arn": "",
+            "lambda_success_feedback_role_arn": "",
+            "lambda_success_feedback_sample_rate": 0,
+            "name": "cloud-bank-transaction-alerts",
+            "name_prefix": "",
+            "owner": "000000000000",
+            "policy": "{\"Id\":\"__default_policy_ID\",\"Statement\":[{\"Action\":[\"SNS:GetTopicAttributes\",\"SNS:SetTopicAttributes\",\"SNS:AddPermission\",\"SNS:RemovePermission\",\"SNS:DeleteTopic\",\"SNS:Subscribe\",\"SNS:ListSubscriptionsByTopic\",\"SNS:Publish\"],\"Condition\":{\"StringEquals\":{\"AWS:SourceOwner\":\"000000000000\"}},\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"*\"},\"Resource\":\"arn:aws:sns:ap-southeast-1:000000000000:cloud-bank-transaction-alerts\",\"Sid\":\"__default_statement_ID\"}],\"Version\":\"2008-10-17\"}",
+            "signature_version": 0,
+            "sqs_failure_feedback_role_arn": "",
+            "sqs_success_feedback_role_arn": "",
+            "sqs_success_feedback_sample_rate": 0,
+            "tags": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Name": "cloud-bank-transaction-alerts",
+              "Project": "cloud-bank",
+              "Purpose": "Real-time transaction alerts to users",
+              "Region": "ap-southeast-1"
+            },
+            "tags_all": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Name": "cloud-bank-transaction-alerts",
+              "Project": "cloud-bank",
+              "Purpose": "Real-time transaction alerts to users",
+              "Region": "ap-southeast-1"
+            },
+            "tracing_config": ""
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA=="
+        }
+      ]
+    },
+    {
+      "module": "module.messaging",
+      "mode": "managed",
+      "type": "aws_sns_topic_subscription",
+      "name": "transactions_sqs",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "arn": "arn:aws:sns:ap-southeast-1:000000000000:cloud-bank-transaction-alerts:78ab0feb-6f03-4f40-a5f7-7c55e4991992",
+            "confirmation_timeout_in_minutes": 1,
+            "confirmation_was_authenticated": true,
+            "delivery_policy": "",
+            "endpoint": "arn:aws:sqs:ap-southeast-1:000000000000:cloud-bank-transactions-local",
+            "endpoint_auto_confirms": false,
+            "filter_policy": "",
+            "filter_policy_scope": "",
+            "id": "arn:aws:sns:ap-southeast-1:000000000000:cloud-bank-transaction-alerts:78ab0feb-6f03-4f40-a5f7-7c55e4991992",
+            "owner_id": "000000000000",
+            "pending_confirmation": false,
+            "protocol": "sqs",
+            "raw_message_delivery": false,
+            "redrive_policy": "",
+            "replay_policy": "",
+            "subscription_role_arn": "",
+            "topic_arn": "arn:aws:sns:ap-southeast-1:000000000000:cloud-bank-transaction-alerts"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "module.messaging.aws_sns_topic.transaction_alerts",
+            "module.messaging.aws_sqs_queue.transaction_dlq",
+            "module.messaging.aws_sqs_queue.transactions"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.messaging",
+      "mode": "managed",
+      "type": "aws_sqs_queue",
+      "name": "kyc_verification",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "arn": "arn:aws:sqs:ap-southeast-1:000000000000:cloud-bank-kyc-verification",
+            "content_based_deduplication": false,
+            "deduplication_scope": "",
+            "delay_seconds": 0,
+            "fifo_queue": false,
+            "fifo_throughput_limit": "",
+            "id": "http://sqs.ap-southeast-1.localhost.localstack.cloud:4566/000000000000/cloud-bank-kyc-verification",
+            "kms_data_key_reuse_period_seconds": 300,
+            "kms_master_key_id": "",
+            "max_message_size": 262144,
+            "message_retention_seconds": 345600,
+            "name": "cloud-bank-kyc-verification",
+            "name_prefix": "",
+            "policy": "",
+            "receive_wait_time_seconds": 0,
+            "redrive_allow_policy": "",
+            "redrive_policy": "",
+            "sqs_managed_sse_enabled": true,
+            "tags": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Name": "cloud-bank-kyc-verification",
+              "Project": "cloud-bank",
+              "Purpose": "KYC document verification jobs",
+              "Region": "ap-southeast-1"
+            },
+            "tags_all": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Name": "cloud-bank-kyc-verification",
+              "Project": "cloud-bank",
+              "Purpose": "KYC document verification jobs",
+              "Region": "ap-southeast-1"
+            },
+            "timeouts": null,
+            "url": "http://sqs.ap-southeast-1.localhost.localstack.cloud:4566/000000000000/cloud-bank-kyc-verification",
+            "visibility_timeout_seconds": 300
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxODAwMDAwMDAwMDAsImRlbGV0ZSI6MTgwMDAwMDAwMDAwLCJ1cGRhdGUiOjE4MDAwMDAwMDAwMH19"
+        }
+      ]
+    },
+    {
+      "module": "module.messaging",
+      "mode": "managed",
+      "type": "aws_sqs_queue",
+      "name": "transaction_dlq",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "arn": "arn:aws:sqs:ap-southeast-1:000000000000:cloud-bank-transactions-local-dlq",
+            "content_based_deduplication": false,
+            "deduplication_scope": "",
+            "delay_seconds": 0,
+            "fifo_queue": false,
+            "fifo_throughput_limit": "",
+            "id": "http://sqs.ap-southeast-1.localhost.localstack.cloud:4566/000000000000/cloud-bank-transactions-local-dlq",
+            "kms_data_key_reuse_period_seconds": 300,
+            "kms_master_key_id": "",
+            "max_message_size": 262144,
+            "message_retention_seconds": 1209600,
+            "name": "cloud-bank-transactions-local-dlq",
+            "name_prefix": "",
+            "policy": "",
+            "receive_wait_time_seconds": 0,
+            "redrive_allow_policy": "",
+            "redrive_policy": "",
+            "sqs_managed_sse_enabled": true,
+            "tags": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Name": "cloud-bank-transactions-local-dlq",
+              "Project": "cloud-bank",
+              "Purpose": "Dead letter queue for failed transactions",
+              "Region": "ap-southeast-1"
+            },
+            "tags_all": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Name": "cloud-bank-transactions-local-dlq",
+              "Project": "cloud-bank",
+              "Purpose": "Dead letter queue for failed transactions",
+              "Region": "ap-southeast-1"
+            },
+            "timeouts": null,
+            "url": "http://sqs.ap-southeast-1.localhost.localstack.cloud:4566/000000000000/cloud-bank-transactions-local-dlq",
+            "visibility_timeout_seconds": 30
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxODAwMDAwMDAwMDAsImRlbGV0ZSI6MTgwMDAwMDAwMDAwLCJ1cGRhdGUiOjE4MDAwMDAwMDAwMH19",
+          "create_before_destroy": true
+        }
+      ]
+    },
+    {
+      "module": "module.messaging",
+      "mode": "managed",
+      "type": "aws_sqs_queue",
+      "name": "transactions",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "arn": "arn:aws:sqs:ap-southeast-1:000000000000:cloud-bank-transactions-local",
+            "content_based_deduplication": false,
+            "deduplication_scope": "",
+            "delay_seconds": 0,
+            "fifo_queue": false,
+            "fifo_throughput_limit": "",
+            "id": "http://sqs.ap-southeast-1.localhost.localstack.cloud:4566/000000000000/cloud-bank-transactions-local",
+            "kms_data_key_reuse_period_seconds": 300,
+            "kms_master_key_id": "",
+            "max_message_size": 262144,
+            "message_retention_seconds": 86400,
+            "name": "cloud-bank-transactions-local",
+            "name_prefix": "",
+            "policy": "",
+            "receive_wait_time_seconds": 10,
+            "redrive_allow_policy": "",
+            "redrive_policy": "{\"deadLetterTargetArn\":\"arn:aws:sqs:ap-southeast-1:000000000000:cloud-bank-transactions-local-dlq\",\"maxReceiveCount\":3}",
+            "sqs_managed_sse_enabled": true,
+            "tags": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Name": "cloud-bank-transactions-local",
+              "Project": "cloud-bank",
+              "Purpose": "Async transaction processing",
+              "Region": "ap-southeast-1"
+            },
+            "tags_all": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Name": "cloud-bank-transactions-local",
+              "Project": "cloud-bank",
+              "Purpose": "Async transaction processing",
+              "Region": "ap-southeast-1"
+            },
+            "timeouts": null,
+            "url": "http://sqs.ap-southeast-1.localhost.localstack.cloud:4566/000000000000/cloud-bank-transactions-local",
+            "visibility_timeout_seconds": 60
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxODAwMDAwMDAwMDAsImRlbGV0ZSI6MTgwMDAwMDAwMDAwLCJ1cGRhdGUiOjE4MDAwMDAwMDAwMH19",
+          "dependencies": [
+            "module.messaging.aws_sqs_queue.transaction_dlq"
+          ],
+          "create_before_destroy": true
+        }
+      ]
+    },
+    {
+      "module": "module.monitoring",
+      "mode": "managed",
+      "type": "aws_cloudwatch_dashboard",
+      "name": "main",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "dashboard_arn": "arn:aws:cloudwatch::000000000000:dashboard/cloud-bank-overview",
+            "dashboard_body": "{\"widgets\":[{\"properties\":{\"metrics\":[[\"AWS/Lambda\",\"Invocations\",\"FunctionName\",\"cloud-bank-transactions\"],[\"AWS/Lambda\",\"Invocations\",\"FunctionName\",\"cloud-bank-accounts\"],[\"AWS/Lambda\",\"Invocations\",\"FunctionName\",\"cloud-bank-auth\"]],\"period\":300,\"title\":\"Lambda Invocations\"},\"type\":\"metric\"},{\"properties\":{\"metrics\":[[\"AWS/Lambda\",\"Errors\",\"FunctionName\",\"cloud-bank-transactions\"],[\"AWS/Lambda\",\"Errors\",\"FunctionName\",\"cloud-bank-accounts\"]],\"period\":300,\"title\":\"Lambda Errors\"},\"type\":\"metric\"},{\"properties\":{\"metrics\":[[\"AWS/SQS\",\"ApproximateNumberOfMessagesVisible\",\"QueueName\",\"cloud-bank-transactions\"]],\"period\":60,\"title\":\"SQS Queue Depth\"},\"type\":\"metric\"}]}",
+            "dashboard_name": "cloud-bank-overview",
+            "id": "cloud-bank-overview"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA=="
+        }
+      ]
+    },
+    {
+      "module": "module.monitoring",
+      "mode": "managed",
+      "type": "aws_cloudwatch_metric_alarm",
+      "name": "transaction_lambda_errors",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 1,
+          "attributes": {
+            "actions_enabled": true,
+            "alarm_actions": [],
+            "alarm_description": "Transaction Lambda error rate is too high",
+            "alarm_name": "cloud-bank-transaction-lambda-errors",
+            "arn": "arn:aws:cloudwatch:ap-southeast-1:000000000000:alarm:cloud-bank-transaction-lambda-errors",
+            "comparison_operator": "GreaterThanThreshold",
+            "datapoints_to_alarm": 0,
+            "dimensions": {
+              "FunctionName": "cloud-bank-transactions"
+            },
+            "evaluate_low_sample_count_percentiles": "",
+            "evaluation_periods": 2,
+            "extended_statistic": "",
+            "id": "cloud-bank-transaction-lambda-errors",
+            "insufficient_data_actions": [],
+            "metric_name": "Errors",
+            "metric_query": [],
+            "namespace": "AWS/Lambda",
+            "ok_actions": [],
+            "period": 60,
+            "statistic": "Sum",
+            "tags": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Project": "cloud-bank",
+              "Region": "ap-southeast-1"
+            },
+            "tags_all": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Project": "cloud-bank",
+              "Region": "ap-southeast-1"
+            },
+            "threshold": 5,
+            "threshold_metric_id": "",
+            "treat_missing_data": "missing",
+            "unit": ""
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJzY2hlbWFfdmVyc2lvbiI6IjEifQ=="
+        }
+      ]
+    },
+    {
+      "module": "module.monitoring",
+      "mode": "managed",
+      "type": "aws_cloudwatch_metric_alarm",
+      "name": "transaction_queue_depth",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 1,
+          "attributes": {
+            "actions_enabled": true,
+            "alarm_actions": [],
+            "alarm_description": "Transaction queue is backing up",
+            "alarm_name": "cloud-bank-transaction-queue-depth",
+            "arn": "arn:aws:cloudwatch:ap-southeast-1:000000000000:alarm:cloud-bank-transaction-queue-depth",
+            "comparison_operator": "GreaterThanThreshold",
+            "datapoints_to_alarm": 0,
+            "dimensions": {
+              "QueueName": "cloud-bank-transactions"
+            },
+            "evaluate_low_sample_count_percentiles": "",
+            "evaluation_periods": 3,
+            "extended_statistic": "",
+            "id": "cloud-bank-transaction-queue-depth",
+            "insufficient_data_actions": [],
+            "metric_name": "ApproximateNumberOfMessagesVisible",
+            "metric_query": [],
+            "namespace": "AWS/SQS",
+            "ok_actions": [],
+            "period": 300,
+            "statistic": "Average",
+            "tags": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Project": "cloud-bank",
+              "Region": "ap-southeast-1"
+            },
+            "tags_all": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Project": "cloud-bank",
+              "Region": "ap-southeast-1"
+            },
+            "threshold": 1000,
+            "threshold_metric_id": "",
+            "treat_missing_data": "missing",
+            "unit": ""
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJzY2hlbWFfdmVyc2lvbiI6IjEifQ=="
+        }
+      ]
+    },
+    {
+      "module": "module.networking",
+      "mode": "managed",
+      "type": "aws_internet_gateway",
+      "name": "main",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "arn": "arn:aws:ec2:ap-southeast-1:000000000000:internet-gateway/igw-186523af3c541f688",
+            "id": "igw-186523af3c541f688",
+            "owner_id": "000000000000",
+            "tags": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Name": "cloud-bank-igw",
+              "Project": "cloud-bank",
+              "Region": "ap-southeast-1"
+            },
+            "tags_all": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Name": "cloud-bank-igw",
+              "Project": "cloud-bank",
+              "Region": "ap-southeast-1"
+            },
+            "timeouts": null,
+            "vpc_id": "vpc-2e636e95d7d96c7a2"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH19",
+          "dependencies": [
+            "module.networking.aws_vpc.main"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.networking",
+      "mode": "managed",
+      "type": "aws_security_group",
+      "name": "lambda",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 1,
+          "attributes": {
+            "arn": "arn:aws:ec2:ap-southeast-1:000000000000:security-group/sg-6953e4b49a3ffc0ed",
+            "description": "Security group for Lambda functions",
+            "egress": [
+              {
+                "cidr_blocks": [
+                  "0.0.0.0/0"
+                ],
+                "description": "",
+                "from_port": 0,
+                "ipv6_cidr_blocks": [],
+                "prefix_list_ids": [],
+                "protocol": "-1",
+                "security_groups": [],
+                "self": false,
+                "to_port": 0
+              }
+            ],
+            "id": "sg-6953e4b49a3ffc0ed",
+            "ingress": [],
+            "name": "cloud-bank-lambda-sg",
+            "name_prefix": "",
+            "owner_id": "000000000000",
+            "revoke_rules_on_delete": false,
+            "tags": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Name": "cloud-bank-lambda-sg",
+              "Project": "cloud-bank",
+              "Region": "ap-southeast-1"
+            },
+            "tags_all": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Name": "cloud-bank-lambda-sg",
+              "Project": "cloud-bank",
+              "Region": "ap-southeast-1"
+            },
+            "timeouts": null,
+            "vpc_id": "vpc-2e636e95d7d96c7a2"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6OTAwMDAwMDAwMDAwfSwic2NoZW1hX3ZlcnNpb24iOiIxIn0=",
+          "dependencies": [
+            "module.networking.aws_vpc.main"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.networking",
+      "mode": "managed",
+      "type": "aws_security_group",
+      "name": "rds",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 1,
+          "attributes": {
+            "arn": "arn:aws:ec2:ap-southeast-1:000000000000:security-group/sg-adde9078e937ff327",
+            "description": "Security group for RDS database",
+            "egress": [],
+            "id": "sg-adde9078e937ff327",
+            "ingress": [
+              {
+                "cidr_blocks": [],
+                "description": "PostgreSQL from Lambda only",
+                "from_port": 5432,
+                "ipv6_cidr_blocks": [],
+                "prefix_list_ids": [],
+                "protocol": "tcp",
+                "security_groups": [
+                  "sg-6953e4b49a3ffc0ed"
+                ],
+                "self": false,
+                "to_port": 5432
+              }
+            ],
+            "name": "cloud-bank-rds-sg",
+            "name_prefix": "",
+            "owner_id": "000000000000",
+            "revoke_rules_on_delete": false,
+            "tags": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Name": "cloud-bank-rds-sg",
+              "Project": "cloud-bank",
+              "Region": "ap-southeast-1"
+            },
+            "tags_all": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Name": "cloud-bank-rds-sg",
+              "Project": "cloud-bank",
+              "Region": "ap-southeast-1"
+            },
+            "timeouts": null,
+            "vpc_id": "vpc-2e636e95d7d96c7a2"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6OTAwMDAwMDAwMDAwfSwic2NoZW1hX3ZlcnNpb24iOiIxIn0=",
+          "dependencies": [
+            "module.networking.aws_security_group.lambda",
+            "module.networking.aws_vpc.main"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.networking",
+      "mode": "managed",
+      "type": "aws_subnet",
+      "name": "private",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "index_key": 0,
+          "schema_version": 1,
+          "attributes": {
+            "arn": "arn:aws:ec2:ap-southeast-1:000000000000:subnet/subnet-1cd8b82e331afa9f1",
+            "assign_ipv6_address_on_creation": false,
+            "availability_zone": "ap-southeast-1a",
+            "availability_zone_id": "apse1-az1",
+            "cidr_block": "10.0.10.0/24",
+            "customer_owned_ipv4_pool": "",
+            "enable_dns64": false,
+            "enable_lni_at_device_index": 0,
+            "enable_resource_name_dns_a_record_on_launch": false,
+            "enable_resource_name_dns_aaaa_record_on_launch": false,
+            "id": "subnet-1cd8b82e331afa9f1",
+            "ipv6_cidr_block": "",
+            "ipv6_cidr_block_association_id": "",
+            "ipv6_native": false,
+            "map_customer_owned_ip_on_launch": false,
+            "map_public_ip_on_launch": false,
+            "outpost_arn": "",
+            "owner_id": "000000000000",
+            "private_dns_hostname_type_on_launch": "ip-name",
+            "tags": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Name": "cloud-bank-private-subnet-1",
+              "Project": "cloud-bank",
+              "Region": "ap-southeast-1",
+              "Type": "private"
+            },
+            "tags_all": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Name": "cloud-bank-private-subnet-1",
+              "Project": "cloud-bank",
+              "Region": "ap-southeast-1",
+              "Type": "private"
+            },
+            "timeouts": null,
+            "vpc_id": "vpc-2e636e95d7d96c7a2"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMSJ9",
+          "dependencies": [
+            "module.networking.aws_vpc.main"
+          ]
+        },
+        {
+          "index_key": 1,
+          "schema_version": 1,
+          "attributes": {
+            "arn": "arn:aws:ec2:ap-southeast-1:000000000000:subnet/subnet-d43f662a871d379c3",
+            "assign_ipv6_address_on_creation": false,
+            "availability_zone": "ap-southeast-1b",
+            "availability_zone_id": "apse1-az2",
+            "cidr_block": "10.0.11.0/24",
+            "customer_owned_ipv4_pool": "",
+            "enable_dns64": false,
+            "enable_lni_at_device_index": 0,
+            "enable_resource_name_dns_a_record_on_launch": false,
+            "enable_resource_name_dns_aaaa_record_on_launch": false,
+            "id": "subnet-d43f662a871d379c3",
+            "ipv6_cidr_block": "",
+            "ipv6_cidr_block_association_id": "",
+            "ipv6_native": false,
+            "map_customer_owned_ip_on_launch": false,
+            "map_public_ip_on_launch": false,
+            "outpost_arn": "",
+            "owner_id": "000000000000",
+            "private_dns_hostname_type_on_launch": "ip-name",
+            "tags": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Name": "cloud-bank-private-subnet-2",
+              "Project": "cloud-bank",
+              "Region": "ap-southeast-1",
+              "Type": "private"
+            },
+            "tags_all": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Name": "cloud-bank-private-subnet-2",
+              "Project": "cloud-bank",
+              "Region": "ap-southeast-1",
+              "Type": "private"
+            },
+            "timeouts": null,
+            "vpc_id": "vpc-2e636e95d7d96c7a2"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMSJ9",
+          "dependencies": [
+            "module.networking.aws_vpc.main"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.networking",
+      "mode": "managed",
+      "type": "aws_subnet",
+      "name": "public",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "index_key": 0,
+          "schema_version": 1,
+          "attributes": {
+            "arn": "arn:aws:ec2:ap-southeast-1:000000000000:subnet/subnet-dab9a8c5acc53784d",
+            "assign_ipv6_address_on_creation": false,
+            "availability_zone": "ap-southeast-1a",
+            "availability_zone_id": "apse1-az1",
+            "cidr_block": "10.0.0.0/24",
+            "customer_owned_ipv4_pool": "",
+            "enable_dns64": false,
+            "enable_lni_at_device_index": 0,
+            "enable_resource_name_dns_a_record_on_launch": false,
+            "enable_resource_name_dns_aaaa_record_on_launch": false,
+            "id": "subnet-dab9a8c5acc53784d",
+            "ipv6_cidr_block": "",
+            "ipv6_cidr_block_association_id": "",
+            "ipv6_native": false,
+            "map_customer_owned_ip_on_launch": false,
+            "map_public_ip_on_launch": false,
+            "outpost_arn": "",
+            "owner_id": "000000000000",
+            "private_dns_hostname_type_on_launch": "ip-name",
+            "tags": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Name": "cloud-bank-public-subnet-1",
+              "Project": "cloud-bank",
+              "Region": "ap-southeast-1",
+              "Type": "public"
+            },
+            "tags_all": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Name": "cloud-bank-public-subnet-1",
+              "Project": "cloud-bank",
+              "Region": "ap-southeast-1",
+              "Type": "public"
+            },
+            "timeouts": null,
+            "vpc_id": "vpc-2e636e95d7d96c7a2"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMSJ9",
+          "dependencies": [
+            "module.networking.aws_vpc.main"
+          ]
+        },
+        {
+          "index_key": 1,
+          "schema_version": 1,
+          "attributes": {
+            "arn": "arn:aws:ec2:ap-southeast-1:000000000000:subnet/subnet-44db9b439517da86f",
+            "assign_ipv6_address_on_creation": false,
+            "availability_zone": "ap-southeast-1b",
+            "availability_zone_id": "apse1-az2",
+            "cidr_block": "10.0.1.0/24",
+            "customer_owned_ipv4_pool": "",
+            "enable_dns64": false,
+            "enable_lni_at_device_index": 0,
+            "enable_resource_name_dns_a_record_on_launch": false,
+            "enable_resource_name_dns_aaaa_record_on_launch": false,
+            "id": "subnet-44db9b439517da86f",
+            "ipv6_cidr_block": "",
+            "ipv6_cidr_block_association_id": "",
+            "ipv6_native": false,
+            "map_customer_owned_ip_on_launch": false,
+            "map_public_ip_on_launch": false,
+            "outpost_arn": "",
+            "owner_id": "000000000000",
+            "private_dns_hostname_type_on_launch": "ip-name",
+            "tags": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Name": "cloud-bank-public-subnet-2",
+              "Project": "cloud-bank",
+              "Region": "ap-southeast-1",
+              "Type": "public"
+            },
+            "tags_all": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Name": "cloud-bank-public-subnet-2",
+              "Project": "cloud-bank",
+              "Region": "ap-southeast-1",
+              "Type": "public"
+            },
+            "timeouts": null,
+            "vpc_id": "vpc-2e636e95d7d96c7a2"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMSJ9",
+          "dependencies": [
+            "module.networking.aws_vpc.main"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.networking",
+      "mode": "managed",
+      "type": "aws_vpc",
+      "name": "main",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 1,
+          "attributes": {
+            "arn": "arn:aws:ec2:ap-southeast-1:000000000000:vpc/vpc-2e636e95d7d96c7a2",
+            "assign_generated_ipv6_cidr_block": false,
+            "cidr_block": "10.0.0.0/16",
+            "default_network_acl_id": "acl-20fd3ada2cda8dffe",
+            "default_route_table_id": "rtb-b7d24e11ba6f616bf",
+            "default_security_group_id": "sg-224230ebe031d0146",
+            "dhcp_options_id": "default",
+            "enable_dns_hostnames": true,
+            "enable_dns_support": true,
+            "enable_network_address_usage_metrics": false,
+            "id": "vpc-2e636e95d7d96c7a2",
+            "instance_tenancy": "default",
+            "ipv4_ipam_pool_id": null,
+            "ipv4_netmask_length": null,
+            "ipv6_association_id": "",
+            "ipv6_cidr_block": "",
+            "ipv6_cidr_block_network_border_group": "",
+            "ipv6_ipam_pool_id": "",
+            "ipv6_netmask_length": 0,
+            "main_route_table_id": "rtb-b7d24e11ba6f616bf",
+            "owner_id": "000000000000",
+            "tags": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Name": "cloud-bank-vpc",
+              "Project": "cloud-bank",
+              "Region": "ap-southeast-1"
+            },
+            "tags_all": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Name": "cloud-bank-vpc",
+              "Project": "cloud-bank",
+              "Region": "ap-southeast-1"
+            }
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJzY2hlbWFfdmVyc2lvbiI6IjEifQ=="
+        }
+      ]
+    },
+    {
+      "module": "module.storage",
+      "mode": "managed",
+      "type": "aws_s3_bucket",
+      "name": "kyc_documents",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "acceleration_status": "",
+            "acl": null,
+            "arn": "arn:aws:s3:::cloud-bank-kyc-documents-local",
+            "bucket": "cloud-bank-kyc-documents-local",
+            "bucket_domain_name": "cloud-bank-kyc-documents-local.s3.amazonaws.com",
+            "bucket_prefix": "",
+            "bucket_regional_domain_name": "cloud-bank-kyc-documents-local.s3.ap-southeast-1.amazonaws.com",
+            "cors_rule": [],
+            "force_destroy": false,
+            "grant": [
+              {
+                "id": "75aa57f09aa0c8caeab4f8c24e99d10f8e7faeebf76c078efc7c6caea54ba06a",
+                "permissions": [
+                  "FULL_CONTROL"
+                ],
+                "type": "CanonicalUser",
+                "uri": ""
+              }
+            ],
+            "hosted_zone_id": "Z3O0J2DXBE1FTB",
+            "id": "cloud-bank-kyc-documents-local",
+            "lifecycle_rule": [],
+            "logging": [],
+            "object_lock_configuration": [],
+            "object_lock_enabled": false,
+            "policy": "",
+            "region": "ap-southeast-1",
+            "replication_configuration": [],
+            "request_payer": "BucketOwner",
+            "server_side_encryption_configuration": [
+              {
+                "rule": [
+                  {
+                    "apply_server_side_encryption_by_default": [
+                      {
+                        "kms_master_key_id": "",
+                        "sse_algorithm": "AES256"
+                      }
+                    ],
+                    "bucket_key_enabled": false
+                  }
+                ]
+              }
+            ],
+            "tags": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Name": "cloud-bank-kyc-documents-local",
+              "Project": "cloud-bank",
+              "Purpose": "KYC identity documents",
+              "Region": "ap-southeast-1"
+            },
+            "tags_all": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Name": "cloud-bank-kyc-documents-local",
+              "Project": "cloud-bank",
+              "Purpose": "KYC identity documents",
+              "Region": "ap-southeast-1"
+            },
+            "timeouts": null,
+            "versioning": [
+              {
+                "enabled": false,
+                "mfa_delete": false
+              }
+            ],
+            "website": [],
+            "website_domain": null,
+            "website_endpoint": null
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjM2MDAwMDAwMDAwMDAsInJlYWQiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH19"
+        }
+      ]
+    },
+    {
+      "module": "module.storage",
+      "mode": "managed",
+      "type": "aws_s3_bucket",
+      "name": "statements",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "acceleration_status": "",
+            "acl": null,
+            "arn": "arn:aws:s3:::cloud-bank-statements-local",
+            "bucket": "cloud-bank-statements-local",
+            "bucket_domain_name": "cloud-bank-statements-local.s3.amazonaws.com",
+            "bucket_prefix": "",
+            "bucket_regional_domain_name": "cloud-bank-statements-local.s3.ap-southeast-1.amazonaws.com",
+            "cors_rule": [],
+            "force_destroy": false,
+            "grant": [
+              {
+                "id": "75aa57f09aa0c8caeab4f8c24e99d10f8e7faeebf76c078efc7c6caea54ba06a",
+                "permissions": [
+                  "FULL_CONTROL"
+                ],
+                "type": "CanonicalUser",
+                "uri": ""
+              }
+            ],
+            "hosted_zone_id": "Z3O0J2DXBE1FTB",
+            "id": "cloud-bank-statements-local",
+            "lifecycle_rule": [],
+            "logging": [],
+            "object_lock_configuration": [],
+            "object_lock_enabled": false,
+            "policy": "",
+            "region": "ap-southeast-1",
+            "replication_configuration": [],
+            "request_payer": "BucketOwner",
+            "server_side_encryption_configuration": [
+              {
+                "rule": [
+                  {
+                    "apply_server_side_encryption_by_default": [
+                      {
+                        "kms_master_key_id": "",
+                        "sse_algorithm": "AES256"
+                      }
+                    ],
+                    "bucket_key_enabled": false
+                  }
+                ]
+              }
+            ],
+            "tags": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Name": "cloud-bank-statements-local",
+              "Project": "cloud-bank",
+              "Purpose": "Monthly account statements PDF",
+              "Region": "ap-southeast-1"
+            },
+            "tags_all": {
+              "Environment": "localstack",
+              "ManagedBy": "terraform",
+              "Name": "cloud-bank-statements-local",
+              "Project": "cloud-bank",
+              "Purpose": "Monthly account statements PDF",
+              "Region": "ap-southeast-1"
+            },
+            "timeouts": null,
+            "versioning": [
+              {
+                "enabled": false,
+                "mfa_delete": false
+              }
+            ],
+            "website": [],
+            "website_domain": null,
+            "website_endpoint": null
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjM2MDAwMDAwMDAwMDAsInJlYWQiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH19"
+        }
+      ]
+    },
+    {
+      "module": "module.storage",
+      "mode": "managed",
+      "type": "aws_s3_bucket_lifecycle_configuration",
+      "name": "statements_lifecycle",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 1,
+          "attributes": {
+            "bucket": "cloud-bank-statements-local",
+            "expected_bucket_owner": "",
+            "id": "cloud-bank-statements-local",
+            "rule": [
+              {
+                "abort_incomplete_multipart_upload": [],
+                "expiration": [],
+                "filter": [
+                  {
+                    "and": [],
+                    "object_size_greater_than": null,
+                    "object_size_less_than": null,
+                    "prefix": "",
+                    "tag": []
+                  }
+                ],
+                "id": "archive-old-statements",
+                "noncurrent_version_expiration": [],
+                "noncurrent_version_transition": [],
+                "prefix": "",
+                "status": "Enabled",
+                "transition": [
+                  {
+                    "date": null,
+                    "days": 365,
+                    "storage_class": "GLACIER"
+                  },
+                  {
+                    "date": null,
+                    "days": 90,
+                    "storage_class": "STANDARD_IA"
+                  }
+                ]
+              }
+            ],
+            "timeouts": null,
+            "transition_default_minimum_object_size": "all_storage_classes_128K"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "dependencies": [
+            "module.storage.aws_s3_bucket.statements"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.storage",
+      "mode": "managed",
+      "type": "aws_s3_bucket_public_access_block",
+      "name": "kyc_block_public",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "block_public_acls": true,
+            "block_public_policy": true,
+            "bucket": "cloud-bank-kyc-documents-local",
+            "id": "cloud-bank-kyc-documents-local",
+            "ignore_public_acls": true,
+            "restrict_public_buckets": true
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "module.storage.aws_s3_bucket.kyc_documents"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.storage",
+      "mode": "managed",
+      "type": "aws_s3_bucket_server_side_encryption_configuration",
+      "name": "kyc_encryption",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "bucket": "cloud-bank-kyc-documents-local",
+            "expected_bucket_owner": "",
+            "id": "cloud-bank-kyc-documents-local",
+            "rule": [
+              {
+                "apply_server_side_encryption_by_default": [
+                  {
+                    "kms_master_key_id": "",
+                    "sse_algorithm": "AES256"
+                  }
+                ],
+                "bucket_key_enabled": null
+              }
+            ]
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "module.storage.aws_s3_bucket.kyc_documents"
+          ]
+        }
+      ]
+    },
+    {
+      "module": "module.storage",
+      "mode": "managed",
+      "type": "aws_s3_bucket_versioning",
+      "name": "kyc_versioning",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "bucket": "cloud-bank-kyc-documents-local",
+            "expected_bucket_owner": "",
+            "id": "cloud-bank-kyc-documents-local",
+            "mfa": null,
+            "versioning_configuration": [
+              {
+                "mfa_delete": "",
+                "status": "Enabled"
+              }
+            ]
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "module.storage.aws_s3_bucket.kyc_documents"
+          ]
+        }
+      ]
+    }
+  ],
+  "check_results": null
+}
