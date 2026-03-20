@@ -86,12 +86,24 @@ cd terraform
 terraform init
 terraform apply -var-file="environments/localstack/terraform.tfvars" -auto-approve
 
+# 3. Pip install 
+pip install boto3 flask pyjwt pytest requests
+
 # 4. Seed LocalStack with test data
 cd ..
 python scripts/seed_data.py
 
-# 5. Verify everything is running
+# 5. Terraform to create services
+# chmod +x scripts/bootstrap.sh  --optional
+./scripts/bootstrap.sh
+
+# 6. Verify everything is running
+# chmod +x scripts/health_check.sh -- optional 
 ./scripts/health_check.sh
+
+#7. Run stimulated services
+python demo.py
+
 ```
 
 ---
