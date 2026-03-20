@@ -78,16 +78,19 @@ Install these before starting:
 git clone https://github.com/wolfparktaerim/cloud-bank-localstack.git
 cd cloud-bank-localstack
 
-# 2. Initialize Terraform
+# 2. Run Docker
+docker compose up -d
+
+# 3. Initialize Terraform
 cd terraform
 terraform init
 terraform apply -var-file="environments/localstack/terraform.tfvars" -auto-approve
 
-# 3. Seed LocalStack with test data
+# 4. Seed LocalStack with test data
 cd ..
 python scripts/seed_data.py
 
-# 4. Verify everything is running
+# 5. Verify everything is running
 ./scripts/health_check.sh
 ```
 
