@@ -64,9 +64,9 @@ Install these before starting:
 | Tool           | Version | Install                                          |
 | -------------- | ------- | ------------------------------------------------ |
 | Docker Desktop | Latest  | https://docker.com                               |
-| Terraform      | >= 1.6  | `brew install terraform` or https://terraform.io |
+| Terraform      | >= 1.6  | https://terraform.io                             |
 | Python         | >= 3.10 | https://python.org                               |
-| AWS CLI        | >= 2.x  | `brew install awscli`                            |
+| AWS CLI        | >= 2.x  | https://aws.amazon.com/cli/                      |
 | Git            | Latest  | Pre-installed on most systems                    |
 
 ---
