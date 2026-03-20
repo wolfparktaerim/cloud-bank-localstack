@@ -37,3 +37,7 @@ Thumbs.db
 
 # AWS credentials — never commit
 .aws/credentials
+
+#
+scripts/bootstrap.sh
+scripts/health_check.sh
