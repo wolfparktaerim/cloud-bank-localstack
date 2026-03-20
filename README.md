@@ -88,6 +88,10 @@ terraform apply -var-file="environments/localstack/terraform.tfvars" -auto-appro
 
 # 3. Pip install 
 pip install boto3 flask pyjwt pytest requests
+#If you wish to install a Python library that isn't in Homebrew, use a virtual environment:
+python3 -m venv path/to/venv
+source path/to/venv/bin/activate
+python3 -m pip install xyz
 
 # 4. Seed LocalStack with test data
 cd ..
