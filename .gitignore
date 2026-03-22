@@ -34,6 +34,7 @@ Thumbs.db
 scripts/.env
 .env.local
 *.env.prod
+.env
 
 # AWS credentials — never commit
 .aws/credentials

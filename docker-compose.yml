@@ -2,12 +2,13 @@ version: "3.8"
 
 services:
   localstack:
-    image: localstack/localstack:latest
+    image: localstack/localstack-pro:latest
     container_name: cloud-bank-localstack
     ports:
       - "4566:4566"       # Main LocalStack endpoint
       - "4510-4559:4510-4559"  # External services port range
     environment:
+      - LOCALSTACK_AUTH_TOKEN=${LOCALSTACK_AUTH_TOKEN:? }
       - SERVICES=s3,dynamodb,lambda,sqs,sns,rds,iam,apigateway,cloudwatch,logs,ec2,secretsmanager,ssm,sts
       - DEFAULT_REGION=ap-southeast-1
       - AWS_DEFAULT_REGION=ap-southeast-1
