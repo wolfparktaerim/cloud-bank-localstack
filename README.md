@@ -158,7 +158,7 @@ git push origin feature/your-feature-name
 | API Gateway      | REST API entry point        | ✅ Free            |
 | Lambda           | Business logic              | ✅ Free            |
 | DynamoDB         | User sessions, transactions | ✅ Free            |
-| RDS (PostgreSQL) | Core accounts data          | ✅ Free            |
+| RDS (PostgreSQL) | Core accounts data          | ✅ Pro (LocalStack) |
 | S3               | KYC documents, statements   | ✅ Free            |
 | SQS              | Async transaction queue     | ✅ Free            |
 | SNS              | Push notifications          | ✅ Free            |
