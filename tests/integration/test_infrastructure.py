@@ -10,6 +10,7 @@ Requires: LocalStack running + terraform applied + seed data loaded
 import os
 import json
 import boto3
+import pg8000
 import pytest
 import requests
 
@@ -26,6 +27,43 @@ def aws_client(service: str):
         region_name=REGION,
         aws_access_key_id="test",
         aws_secret_access_key="test",
+    )
+
+
+def rds_connection_config() -> dict:
+    db_name = os.getenv("DB_NAME", "cloudbank")
+    db_user = os.getenv("DB_USERNAME", "admin")
+    db_password = os.getenv("DB_PASSWORD", "LocalDev123!")
+
+    rds = aws_client("rds")
+    instances = rds.describe_db_instances().get("DBInstances", [])
+    if not instances:
+        pytest.skip("No RDS instances found in LocalStack")
+
+    endpoint = instances[0].get("Endpoint", {})
+    host = endpoint.get("Address")
+    port = endpoint.get("Port")
+    if not host or not port:
+        pytest.skip("RDS instance endpoint is not ready")
+
+    return {
+        "host": host,
+        "port": int(port),
+        "database": db_name,
+        "user": db_user,
+        "password": db_password,
+    }
+
+
+def connect_rds():
+    cfg = rds_connection_config()
+    return pg8000.dbapi.connect(
+        host=cfg["host"],
+        port=cfg["port"],
+        database=cfg["database"],
+        user=cfg["user"],
+        password=cfg["password"],
+        timeout=10,
     )
 
 
@@ -97,6 +135,28 @@ class TestDynamoDB:
             TableName=table,
             Key={"session_id": {"S": "test-session-123"}}
         )
+
+
+# ── RDS Tests ────────────────────────────────
+class TestRDS:
+    def test_rds_instance_is_discoverable(self):
+        cfg = rds_connection_config()
+        assert cfg["host"]
+        assert cfg["port"] > 0
+
+    def test_accounts_table_exists_and_has_seed_data(self):
+        conn = connect_rds()
+        try:
+            cur = conn.cursor()
+            cur.execute("SELECT to_regclass('public.accounts')")
+            table_name = cur.fetchone()[0]
+            assert table_name == "accounts"
+
+            cur.execute("SELECT COUNT(*) FROM accounts")
+            row_count = cur.fetchone()[0]
+            assert row_count >= 1
+        finally:
+            conn.close()
 
 
 # ── SQS Tests ─────────────────────────────────

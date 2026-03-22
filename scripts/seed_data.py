@@ -13,9 +13,15 @@ import uuid
 import datetime
 import random
 import sys
+import os
+
+import pg8000
 
 LOCALSTACK_ENDPOINT = "http://localhost:4566"
 REGION = "ap-southeast-1"
+RDS_DB_NAME = os.getenv("DB_NAME", "cloudbank")
+RDS_DB_USERNAME = os.getenv("DB_USERNAME", "admin")
+RDS_DB_PASSWORD = os.getenv("DB_PASSWORD", "LocalDev123!")
 
 # Boto3 client factory pointing at LocalStack
 def client(service: str):
@@ -30,6 +36,87 @@ def client(service: str):
 
 def log(msg: str):
     print(f"  [seed] {msg}")
+
+
+def get_rds_connection_info() -> dict:
+    """Resolve RDS endpoint/port from LocalStack RDS API with env overrides."""
+    endpoint_override = os.getenv("RDS_ENDPOINT")
+    port_override = os.getenv("RDS_PORT")
+    if endpoint_override:
+        return {
+            "host": endpoint_override,
+            "port": int(port_override or "5432"),
+            "database": RDS_DB_NAME,
+            "user": RDS_DB_USERNAME,
+            "password": RDS_DB_PASSWORD,
+        }
+
+    rds = client("rds")
+    instances = rds.describe_db_instances().get("DBInstances", [])
+    if not instances:
+        raise RuntimeError("No RDS instances found. Run terraform apply and ensure LocalStack Pro RDS is enabled.")
+
+    instance = instances[0]
+    address = instance["Endpoint"]["Address"]
+    port = int(instance["Endpoint"]["Port"])
+
+    return {
+        "host": address,
+        "port": port,
+        "database": RDS_DB_NAME,
+        "user": RDS_DB_USERNAME,
+        "password": RDS_DB_PASSWORD,
+    }
+
+
+def seed_rds_accounts(users: list):
+    log("Seeding RDS PostgreSQL accounts table...")
+    cfg = get_rds_connection_info()
+
+    conn = pg8000.dbapi.connect(
+        host=cfg["host"],
+        port=cfg["port"],
+        database=cfg["database"],
+        user=cfg["user"],
+        password=cfg["password"],
+        timeout=10,
+    )
+
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            CREATE TABLE IF NOT EXISTS accounts (
+                account_id VARCHAR(64) PRIMARY KEY,
+                user_id VARCHAR(64) NOT NULL,
+                email VARCHAR(255) NOT NULL,
+                full_name VARCHAR(255) NOT NULL,
+                currency VARCHAR(8) NOT NULL DEFAULT 'SGD',
+                balance NUMERIC(14,2) NOT NULL DEFAULT 0,
+                created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            )
+            """
+        )
+
+        inserted = 0
+        for user in users:
+            account_id = f"acct-{user['user_id']}"
+            cur.execute(
+                """
+                INSERT INTO accounts (account_id, user_id, email, full_name, currency, balance)
+                VALUES (%s, %s, %s, %s, %s, %s)
+                ON CONFLICT (account_id) DO UPDATE
+                SET email = EXCLUDED.email,
+                    full_name = EXCLUDED.full_name
+                """,
+                (account_id, user["user_id"], user["email"], user["name"], "SGD", 1000.00),
+            )
+            inserted += 1
+
+        conn.commit()
+        log(f"  ✓ Seeded {inserted} account rows in RDS ({cfg['host']}:{cfg['port']})")
+    finally:
+        conn.close()
 
 
 # ── Seed DynamoDB: User Sessions ──────────────
@@ -174,6 +261,7 @@ def main():
 
     try:
         users = seed_user_sessions()
+        seed_rds_accounts(users)
         seed_transactions(users)
         seed_s3_documents(users)
         seed_sqs_messages()

@@ -10,6 +10,9 @@ import uuid
 import datetime
 import requests
 import sys
+import os
+
+import pg8000
 
 # ── Config ────────────────────────────────────
 LOCALSTACK = "http://localhost:4566"
@@ -17,6 +20,9 @@ AUTH_URL   = "http://localhost:5001"
 NOTIF_URL  = "http://localhost:5004"
 KYC_URL    = "http://localhost:5003"
 REGION     = "ap-southeast-1"
+RDS_DB_NAME = os.getenv("DB_NAME", "cloudbank")
+RDS_DB_USERNAME = os.getenv("DB_USERNAME", "admin")
+RDS_DB_PASSWORD = os.getenv("DB_PASSWORD", "LocalDev123!")
 
 GREEN  = "\033[92m"
 YELLOW = "\033[93m"
@@ -54,6 +60,33 @@ def err(msg):  print(f"  {RED}✗{RESET} {msg}")
 
 def wait():
     input(f"\n  {YELLOW}Press Enter to continue...{RESET}")
+
+
+def get_rds_connection_info():
+    endpoint_override = os.getenv("RDS_ENDPOINT")
+    port_override = os.getenv("RDS_PORT")
+    if endpoint_override:
+        return {
+            "host": endpoint_override,
+            "port": int(port_override or "5432"),
+            "database": RDS_DB_NAME,
+            "user": RDS_DB_USERNAME,
+            "password": RDS_DB_PASSWORD,
+        }
+
+    rds = aws("rds")
+    instances = rds.describe_db_instances().get("DBInstances", [])
+    if not instances:
+        raise RuntimeError("No RDS instances found. Run terraform apply and ensure LocalStack Pro RDS is enabled.")
+
+    endpoint = instances[0]["Endpoint"]
+    return {
+        "host": endpoint["Address"],
+        "port": int(endpoint["Port"]),
+        "database": RDS_DB_NAME,
+        "user": RDS_DB_USERNAME,
+        "password": RDS_DB_PASSWORD,
+    }
 
 # ── 0. Health check ───────────────────────────
 def check_health():
@@ -204,6 +237,60 @@ def demo_dynamodb(user_id, email):
         ok(f"Table: {t}")
 
     return account_id
+
+
+# ── 2b. RDS PostgreSQL ───────────────────────
+def demo_rds(user_id, email):
+    section("2b. RDS PostgreSQL — Core Account Storage")
+
+    info("Resolving RDS endpoint and opening PostgreSQL connection...")
+    cfg = get_rds_connection_info()
+    conn = pg8000.dbapi.connect(
+        host=cfg["host"],
+        port=cfg["port"],
+        database=cfg["database"],
+        user=cfg["user"],
+        password=cfg["password"],
+        timeout=10,
+    )
+
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            CREATE TABLE IF NOT EXISTS accounts (
+                account_id VARCHAR(64) PRIMARY KEY,
+                user_id VARCHAR(64) NOT NULL,
+                email VARCHAR(255) NOT NULL,
+                full_name VARCHAR(255) NOT NULL,
+                currency VARCHAR(8) NOT NULL DEFAULT 'SGD',
+                balance NUMERIC(14,2) NOT NULL DEFAULT 0,
+                created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            )
+            """
+        )
+
+        account_id = f"acct-{user_id[:8]}"
+        cur.execute(
+            """
+            INSERT INTO accounts (account_id, user_id, email, full_name, currency, balance)
+            VALUES (%s, %s, %s, %s, %s, %s)
+            ON CONFLICT (account_id) DO UPDATE
+            SET email = EXCLUDED.email,
+                full_name = EXCLUDED.full_name
+            """,
+            (account_id, user_id, email, "Demo User", "SGD", 5000.00),
+        )
+        conn.commit()
+        ok(f"Inserted/updated account row in RDS: {account_id}")
+
+        cur.execute("SELECT account_id, email, balance FROM accounts WHERE account_id = %s", (account_id,))
+        row = cur.fetchone()
+        ok(f"Read back from RDS: {row[0]} | {row[1]} | SGD {row[2]}")
+
+        return account_id
+    finally:
+        conn.close()
 
 # ── 3. S3 ─────────────────────────────────────
 def demo_s3(user_id):
@@ -431,7 +518,7 @@ def summary():
   {GREEN}✓{RESET} CloudWatch             Dashboards + alarms for queue depth and errors
   {GREEN}✓{RESET} VPC / Networking       VPC, public/private subnets, security groups
 
-  {BOLD}Platform:  LocalStack Community (free) — zero AWS cost{RESET}
+    {BOLD}Platform:  LocalStack Pro (RDS enabled) — local AWS emulation{RESET}
   {BOLD}Region:    ap-southeast-1 (Singapore){RESET}
   {BOLD}Scale:     Designed for 13,000,000 users at launch{RESET}
     """)
@@ -446,6 +533,8 @@ if __name__ == "__main__":
     check_health()
     wait()
     user_id, email = demo_auth()
+    wait()
+    demo_rds(user_id, email)
     wait()
     account_id = demo_dynamodb(user_id, email)
     wait()
