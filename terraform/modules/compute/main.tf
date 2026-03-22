@@ -65,6 +65,9 @@ resource "aws_lambda_function" "service" {
       TRANSACTION_QUEUE  = var.transaction_queue
       NOTIFICATION_TOPIC = var.notification_topic
       DB_ENDPOINT        = var.db_endpoint
+      DB_NAME            = var.db_name
+      DB_USERNAME        = var.db_username
+      DB_PORT            = tostring(var.db_port)
       AUTH_MOCK_URL      = "http://localhost:5001"
     }
   }

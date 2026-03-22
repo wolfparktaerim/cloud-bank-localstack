@@ -52,7 +52,7 @@ variable "db_username" {
 variable "db_password" {
   description = "Database master password"
   type        = string
-  default     = "LocalDev123!"   # Override in prod-sim with secrets manager
+  default     = "LocalDev123!" # Override in prod-sim with secrets manager
   sensitive   = true
 }
 

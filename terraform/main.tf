@@ -33,10 +33,17 @@ module "storage" {
 }
 
 module "database" {
-  source       = "./modules/database"
-  project_name = var.project_name
-  environment  = var.environment
-  tags         = local.common_tags
+  source                = "./modules/database"
+  project_name          = var.project_name
+  environment           = var.environment
+  db_instance_class     = var.db_instance_class
+  db_name               = var.db_name
+  db_username           = var.db_username
+  db_password           = var.db_password
+  subnet_ids            = module.networking.private_subnet_ids
+  vpc_id                = module.networking.vpc_id
+  rds_security_group_id = module.networking.rds_security_group_id
+  tags                  = local.common_tags
 }
 
 module "messaging" {
@@ -57,6 +64,9 @@ module "compute" {
   transaction_queue  = module.messaging.transaction_queue_arn
   notification_topic = module.messaging.notification_topic_arn
   db_endpoint        = module.database.rds_endpoint
+  db_name            = var.db_name
+  db_username        = var.db_username
+  db_port            = module.database.rds_port
   tags               = local.common_tags
 }
 

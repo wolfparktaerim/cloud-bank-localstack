@@ -6,3 +6,6 @@ variable "lambda_role_arn" { type = string }
 variable "transaction_queue" { type = string }
 variable "notification_topic" { type = string }
 variable "db_endpoint" { type = string }
+variable "db_name" { type = string }
+variable "db_username" { type = string }
+variable "db_port" { type = number }
