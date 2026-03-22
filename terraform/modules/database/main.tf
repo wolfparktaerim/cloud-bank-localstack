@@ -3,11 +3,42 @@
 # Owner: Member 3
 # Creates: DynamoDB tables for all banking data
 #
-# Note: RDS/PostgreSQL requires LocalStack Pro.
-#       In community edition we use DynamoDB for
-#       all storage. Architecture doc explains the
-#       trade-off and how real deployment uses RDS.
+# Note: RDS/PostgreSQL in this project targets
+#       LocalStack Pro. DynamoDB resources are
+#       retained for session/ledger/OTP flows and
+#       backwards compatibility in existing demos.
 # ─────────────────────────────────────────────
+
+# ── RDS PostgreSQL ───────────────────────────
+resource "aws_db_subnet_group" "main" {
+  name       = "${var.project_name}-db-subnet-group"
+  subnet_ids = var.subnet_ids
+
+  tags = merge(var.tags, {
+    Name = "${var.project_name}-db-subnet-group"
+  })
+}
+
+resource "aws_db_instance" "postgres" {
+  identifier              = "${var.project_name}-postgres-${var.environment}"
+  engine                  = "postgres"
+  engine_version          = "15"
+  instance_class          = var.db_instance_class
+  allocated_storage       = 20
+  db_name                 = var.db_name
+  username                = var.db_username
+  password                = var.db_password
+  db_subnet_group_name    = aws_db_subnet_group.main.name
+  vpc_security_group_ids  = [var.rds_security_group_id]
+  skip_final_snapshot     = true
+  publicly_accessible     = false
+  deletion_protection     = false
+
+  tags = merge(var.tags, {
+    Name    = "${var.project_name}-postgres-${var.environment}"
+    Purpose = "Core account database"
+  })
+}
 
 # ── DynamoDB: Core Accounts ───────────────────
 resource "aws_dynamodb_table" "accounts" {
