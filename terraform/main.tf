@@ -68,11 +68,23 @@ module "compute" {
   lambda_security_group_id  = module.networking.lambda_security_group_id
 }
 
+module "cognito" {
+  source                = "./modules/cognito"
+  project_name          = var.project_name
+  environment           = var.environment
+  cognito_callback_urls = var.cognito_callback_urls
+  cognito_logout_urls   = var.cognito_logout_urls
+  cognito_domain_prefix = var.cognito_domain_prefix
+  enable_hosted_ui_domain = var.enable_cognito_hosted_ui_domain
+  tags                  = local.common_tags
+}
+
 module "api_gateway" {
   source             = "./modules/api_gateway"
   project_name       = var.project_name
   environment        = var.environment
   lambda_invoke_arns = module.compute.lambda_invoke_arns
+  cognito_user_pool_arn = module.cognito.user_pool_arn
   tags               = local.common_tags
 }
 

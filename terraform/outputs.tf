@@ -22,3 +22,18 @@ output "dynamodb_tables" {
   description = "DynamoDB table names"
   value       = module.database.dynamodb_table_names
 }
+
+output "cognito_user_pool_id" {
+  description = "Cognito user pool ID"
+  value       = module.cognito.user_pool_id
+}
+
+output "cognito_user_pool_client_id" {
+  description = "Cognito app client ID"
+  value       = module.cognito.user_pool_client_id
+}
+
+output "cognito_hosted_ui_domain" {
+  description = "Cognito hosted UI domain"
+  value       = module.cognito.hosted_ui_domain
+}

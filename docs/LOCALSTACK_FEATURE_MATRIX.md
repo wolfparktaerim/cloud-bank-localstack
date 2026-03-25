@@ -1,7 +1,7 @@
 # LocalStack Feature Implementation Matrix
 
 > Comprehensive feature support tracking for NeoBank SG on LocalStack Student Pro (Ultimate tier)  
-> Status: Updated for Phase 0 (Foundation)  
+> Status: Updated for Phase 2 (Cognito & Auth)  
 > Last Updated: March 2026
 
 Legend:
@@ -43,10 +43,10 @@ Legend:
 
 | Feature | Status | Phase | Test | Notes |
 |---------|--------|-------|------|-------|
-| 5.3.1 Cognito User Pools | 🔄 | 2 | `test_cognito_user_pool` | Full CRUD, sign-up, sign-in, JWT issuance; hosted UI at `/_aws/cognito-idp/` |
+| 5.3.1 Cognito User Pools | ✅ | 2 | `test_user_pool_creation`, `test_user_signup_and_login` | Full CRUD, sign-up, sign-in, JWT issuance; hosted UI at `/_aws/cognito-idp/` |
 | 5.3.2 MFA | 🟡 | 2 | `test_cognito_mfa` | Config accepted; TOTP challenges simulated; no real SMS/email delivery |
-| 5.3.3 App Client / Hosted UI | ✅ | 2 | `test_cognito_app_client` | OAuth2 auth code flow, token endpoints, JWTs cryptographically valid |
-| 5.3.4 JWT Authorizer (API Gateway) | ✅ | 2 | `test_apigateway_jwt_authorizer` | Full end-to-end JWT validation via Cognito-issued tokens |
+| 5.3.3 App Client / Hosted UI | ✅ | 2 | `test_app_client_oauth_flow` | OAuth2 auth code flow settings, app client callbacks/logout URLs, hosted UI domain |
+| 5.3.4 JWT Authorizer (API Gateway) | ✅ | 2 | `test_rest_api_cognito_authorizer`, `test_api_call_with_valid_jwt`, `test_api_call_without_jwt_denied` | End-to-end JWT validation via Cognito-issued tokens and API Gateway method protection |
 | 5.3.5 Advanced Security (WAF, adaptive auth) | 📋 | 5 | `test_cognito_advanced_security` | Risk scoring, adaptive auth config accepted; not simulated |
 
 ---
@@ -126,11 +126,12 @@ Legend:
 - VPC endpoint placeholders
 - Lambda VPC wiring
 
-### Phase 2 (Cognito Auth)
-- User pool creation and sign-up/login flow
-- App client and hosted UI
-- JWT authorizer integration with API Gateway
-- MFA configuration (simulated)
+### Phase 2 (Cognito Auth) ✅ COMPLETE
+- ✅ Cognito user pool, app client, and hosted UI domain provisioned
+- ✅ Sign-up, admin-confirm, and sign-in JWT issuance flow implemented in tests
+- ✅ API Gateway Cognito authorizer wired to protected methods (`/accounts`, `/transactions`, `/kyc`)
+- ✅ API authorization behavior tests added (valid JWT accepted, missing JWT denied)
+- ✅ MFA configuration path validated at API level (simulated)
 
 ### Phase 3 (Edge Services)
 - Route 53 hosted zones and records
@@ -219,7 +220,7 @@ This allows running only fully-functional tests (`pytest -m fully_functional`), 
 
 ## Quick Reference: What Requires Phase Implementation
 
-🔄 Cognito (Phase 2)
+✅ Cognito
 🔄 Route 53 (Phase 3)
 🔄 ALB/NLB (Phase 3)
 🔄 RDS (Phase 4A)

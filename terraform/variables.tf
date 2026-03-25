@@ -93,3 +93,28 @@ variable "notification_topic_name" {
   type        = string
   default     = "cloud-bank-notifications"
 }
+
+# ── Cognito ──────────────────────────────────
+variable "cognito_callback_urls" {
+  description = "OAuth callback URLs for Cognito app client"
+  type        = list(string)
+  default     = ["http://localhost:3000/callback"]
+}
+
+variable "cognito_logout_urls" {
+  description = "OAuth logout URLs for Cognito app client"
+  type        = list(string)
+  default     = ["http://localhost:3000/logout"]
+}
+
+variable "cognito_domain_prefix" {
+  description = "Hosted UI domain prefix for Cognito user pool"
+  type        = string
+  default     = "cloud-bank-local-auth"
+}
+
+variable "enable_cognito_hosted_ui_domain" {
+  description = "Create Cognito hosted UI domain (can hang in some LocalStack versions)"
+  type        = bool
+  default     = false
+}

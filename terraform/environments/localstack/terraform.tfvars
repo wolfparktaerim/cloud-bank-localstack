@@ -21,3 +21,9 @@ statements_bucket_name = "cloud-bank-statements-local"
 # Messaging
 transaction_queue_name  = "cloud-bank-transactions-local"
 notification_topic_name = "cloud-bank-notifications-local"
+
+# Cognito
+cognito_callback_urls = ["http://localhost:3000/callback"]
+cognito_logout_urls   = ["http://localhost:3000/logout"]
+cognito_domain_prefix = "cloud-bank-local-auth"
+enable_cognito_hosted_ui_domain = false

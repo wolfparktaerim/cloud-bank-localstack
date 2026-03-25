@@ -15,6 +15,14 @@ resource "aws_api_gateway_rest_api" "banking_api" {
   tags = var.tags
 }
 
+resource "aws_api_gateway_authorizer" "cognito" {
+  name          = "${var.project_name}-cognito-authorizer"
+  rest_api_id   = aws_api_gateway_rest_api.banking_api.id
+  type          = "COGNITO_USER_POOLS"
+  provider_arns = [var.cognito_user_pool_arn]
+  identity_source = "method.request.header.Authorization"
+}
+
 # ── /accounts resource ────────────────────────
 resource "aws_api_gateway_resource" "accounts" {
   rest_api_id = aws_api_gateway_rest_api.banking_api.id
@@ -26,14 +34,16 @@ resource "aws_api_gateway_method" "accounts_get" {
   rest_api_id   = aws_api_gateway_rest_api.banking_api.id
   resource_id   = aws_api_gateway_resource.accounts.id
   http_method   = "GET"
-  authorization = "NONE"   # TODO: change to COGNITO_USER_POOLS in prod
+  authorization = "COGNITO_USER_POOLS"
+  authorizer_id = aws_api_gateway_authorizer.cognito.id
 }
 
 resource "aws_api_gateway_method" "accounts_post" {
   rest_api_id   = aws_api_gateway_rest_api.banking_api.id
   resource_id   = aws_api_gateway_resource.accounts.id
   http_method   = "POST"
-  authorization = "NONE"
+  authorization = "COGNITO_USER_POOLS"
+  authorizer_id = aws_api_gateway_authorizer.cognito.id
 }
 
 resource "aws_api_gateway_integration" "accounts_get" {
@@ -65,7 +75,8 @@ resource "aws_api_gateway_method" "transactions_post" {
   rest_api_id   = aws_api_gateway_rest_api.banking_api.id
   resource_id   = aws_api_gateway_resource.transactions.id
   http_method   = "POST"
-  authorization = "NONE"
+  authorization = "COGNITO_USER_POOLS"
+  authorizer_id = aws_api_gateway_authorizer.cognito.id
 }
 
 resource "aws_api_gateway_integration" "transactions_post" {
@@ -111,7 +122,8 @@ resource "aws_api_gateway_method" "kyc_post" {
   rest_api_id   = aws_api_gateway_rest_api.banking_api.id
   resource_id   = aws_api_gateway_resource.kyc.id
   http_method   = "POST"
-  authorization = "NONE"
+  authorization = "COGNITO_USER_POOLS"
+  authorizer_id = aws_api_gateway_authorizer.cognito.id
 }
 
 resource "aws_api_gateway_integration" "kyc_post" {
@@ -130,11 +142,16 @@ resource "aws_api_gateway_deployment" "main" {
   # Force redeploy when integrations change
   triggers = {
     redeployment = sha1(jsonencode([
+      aws_api_gateway_authorizer.cognito.id,
       aws_api_gateway_integration.accounts_get,
       aws_api_gateway_integration.accounts_post,
       aws_api_gateway_integration.transactions_post,
       aws_api_gateway_integration.auth_post,
       aws_api_gateway_integration.kyc_post,
+      aws_api_gateway_method.accounts_get.authorization,
+      aws_api_gateway_method.accounts_post.authorization,
+      aws_api_gateway_method.transactions_post.authorization,
+      aws_api_gateway_method.kyc_post.authorization,
     ]))
   }
 
