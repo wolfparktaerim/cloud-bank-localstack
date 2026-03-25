@@ -37,6 +37,10 @@ module "database" {
   project_name = var.project_name
   environment  = var.environment
   tags         = local.common_tags
+  
+  # Phase 1: Wire networking to database
+  db_subnet_ids = module.networking.db_subnet_ids
+  vpc_id        = module.networking.vpc_id
 }
 
 module "messaging" {
@@ -58,6 +62,10 @@ module "compute" {
   notification_topic = module.messaging.notification_topic_arn
   db_endpoint        = module.database.rds_endpoint
   tags               = local.common_tags
+  
+  # Phase 1: Wire networking to compute
+  lambda_subnet_ids         = module.networking.private_subnet_ids
+  lambda_security_group_id  = module.networking.lambda_security_group_id
 }
 
 module "api_gateway" {

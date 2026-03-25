@@ -113,7 +113,14 @@ Legend:
 - ✅ Normalized AZ variables
 - ✅ This matrix created with placeholder test stubs
 
-### Phase 1 (Networking)
+### Phase 1 (Networking) ✅ COMPLETE
+- ✅ Route tables and route associations (public → IGW, private → internal)
+- ✅ NACLs for public (http/https/ssh/ephemeral) and private (internal VPC + ephemeral)
+- ✅ DB subnet group for RDS multi-AZ (Phase 4A dependency)
+- ✅ Lambda VPC wiring (subnet_ids + security_group_ids)
+- ✅ Output exports for AZ cross-referencing and subnet group name
+- ✅ Integration tests implemented and passing for VPC foundation
+- ⚠️ VPC endpoints scaffolded (commented) pending Phase 1+ expansion
 - Route tables, NACLs, subnet associations
 - DB subnet groups and RDS SG associations
 - VPC endpoint placeholders

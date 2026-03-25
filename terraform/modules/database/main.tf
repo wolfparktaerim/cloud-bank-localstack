@@ -126,3 +126,20 @@ resource "aws_dynamodb_table" "otp_store" {
     Purpose = "OTP codes with automatic TTL expiry"
   })
 }
+
+# ─────────────────────────────────────────────────────────────
+# PHASE 1: RDS DB Subnet Group (prepared for Phase 4A)
+# ─────────────────────────────────────────────────────────────
+# Phase 4A will use this subnet group for RDS instance deployment.
+# This is set up in Phase 1 to establish the dependency chain:
+# Phase 1 (networking) → Phase 4A (RDS instance creation)
+
+resource "aws_db_subnet_group" "main" {
+  name       = "${var.project_name}-db-subnet-group"
+  subnet_ids = var.db_subnet_ids
+
+  tags = merge(var.tags, {
+    Name    = "${var.project_name}-db-subnet-group"
+    Purpose = "Multi-AZ RDS subnet group for PostgreSQL (Phase 4A)"
+  })
+}

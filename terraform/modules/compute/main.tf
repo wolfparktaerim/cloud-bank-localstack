@@ -69,6 +69,13 @@ resource "aws_lambda_function" "service" {
     }
   }
 
+  # Phase 1: VPC Configuration for Lambda
+  # Allows Lambda to execute within the VPC and access RDS/ElastiCache
+  vpc_config {
+    subnet_ids         = var.lambda_subnet_ids
+    security_group_ids = [var.lambda_security_group_id]
+  }
+
   tags = merge(var.tags, {
     Name    = "${var.project_name}-${each.key}"
     Service = each.key

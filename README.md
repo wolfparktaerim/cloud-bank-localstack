@@ -174,8 +174,8 @@ This project follows a phased rollout of LocalStack Student Pro features (7 phas
 | Phase | Focus | Status | Docs |
 |-------|-------|--------|------|
 | **0** | Foundation alignment | ✅ Complete | [Feature Matrix](docs/LOCALSTACK_FEATURE_MATRIX.md#phase-0-foundation) |
-| **1** | VPC & Networking | 🔄 Next | [Phase 1 Plan](docs/LOCALSTACK_FEATURE_MATRIX.md#phase-1-networking) |
-| **2** | Cognito & Auth | 📋 Planned | [Phase 2 Plan](docs/LOCALSTACK_FEATURE_MATRIX.md#phase-2-cognito-auth) |
+| **1** | VPC & Networking | ✅ Complete | [Phase 1 Plan](docs/LOCALSTACK_FEATURE_MATRIX.md#phase-1-networking) |
+| **2** | Cognito & Auth | 🔄 Next | [Phase 2 Plan](docs/LOCALSTACK_FEATURE_MATRIX.md#phase-2-cognito-auth) |
 | **3** | Route 53 & Edge Services | 📋 Planned | [Phase 3 Plan](docs/LOCALSTACK_FEATURE_MATRIX.md#phase-3-edge-services) |
 | **4A** | Application & RDS | 📋 Planned | [Phase 4A Plan](docs/LOCALSTACK_FEATURE_MATRIX.md#phase-4a-application--rds) |
 | **4B** | ElastiCache & Glue | 📋 Planned | [Phase 4B Plan](docs/LOCALSTACK_FEATURE_MATRIX.md#phase-4b-elasticache--glue--mongo) |

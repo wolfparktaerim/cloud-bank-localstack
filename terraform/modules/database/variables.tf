@@ -25,12 +25,13 @@ variable "db_password" {
   default   = "LocalDev123!"
 }
 
-variable "subnet_ids" {
-  type    = list(string)
-  default = []
+# Phase 1: DB subnet IDs for subnet group (from networking module)
+variable "db_subnet_ids" {
+  description = "Subnet IDs for RDS DB subnet group (private subnets from Phase 1 networking)"
+  type        = list(string)
 }
 
 variable "vpc_id" {
-  type    = string
-  default = ""
+  description = "VPC ID from networking module"
+  type        = string
 }
