@@ -42,6 +42,17 @@ provider "aws" {
     secretsmanager = "http://localhost:4566"
     ssm            = "http://localhost:4566"
     sts            = "http://localhost:4566"
+    cognitoidentityprovider = "http://localhost:4566"
+    route53        = "http://localhost:4566"
+    elbv2          = "http://localhost:4566"
+    wafv2          = "http://localhost:4566"
+    acm            = "http://localhost:4566"
+    kms            = "http://localhost:4566"
+    cloudtrail     = "http://localhost:4566"
+    glue           = "http://localhost:4566"
+    elasticache    = "http://localhost:4566"
+    backup         = "http://localhost:4566"
+    guardduty      = "http://localhost:4566"
   }
 
   # Critical for LocalStack on Windows — forces path-style S3 URLs

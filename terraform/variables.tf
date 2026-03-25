@@ -16,6 +16,18 @@ variable "project_name" {
   default     = "cloud-bank"
 }
 
+variable "availability_zones" {
+  description = "Availability zones for multi-AZ deployment"
+  type        = list(string)
+  default     = ["ap-southeast-1a", "ap-southeast-1b"]
+}
+
+variable "enable_iam_enforcement" {
+  description = "Enable real IAM policy enforcement (LocalStack Pro/Ultimate feature)"
+  type        = bool
+  default     = true
+}
+
 variable "localstack_endpoint" {
   description = "LocalStack endpoint URL"
   type        = string

@@ -2,17 +2,20 @@ version: "3.8"
 
 services:
   localstack:
-    image: localstack/localstack:latest
+    image: localstack/localstack-pro:latest
     container_name: cloud-bank-localstack
     ports:
       - "4566:4566"       # Main LocalStack endpoint
       - "4510-4559:4510-4559"  # External services port range
     environment:
-      - SERVICES=s3,dynamodb,lambda,sqs,sns,rds,iam,apigateway,cloudwatch,logs,ec2,secretsmanager,ssm,sts
+      - LOCALSTACK_AUTH_TOKEN=${LOCALSTACK_AUTH_TOKEN:? }
+      - SERVICES=s3,dynamodb,lambda,sqs,sns,rds,iam,apigateway,cloudwatch,logs,ec2,secretsmanager,ssm,sts,cognito-idp,route53,elbv2,wafv2,acm,kms,cloudtrail,glue,elasticache,backup,guardduty
       - DEFAULT_REGION=ap-southeast-1
       - AWS_DEFAULT_REGION=ap-southeast-1
       - DEBUG=0
       - PERSISTENCE=0
+      - ENFORCE_IAM=1
+      - IAM_POLICY_ENFORCEMENT_MODE=strict
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
     healthcheck:
@@ -22,7 +25,8 @@ services:
       retries: 5
       start_period: 15s
 
-  # Mock service for Cognito (not in LocalStack free tier)
+  # Mock service for Cognito (being replaced with native LocalStack Cognito in Phase 2)
+  # Keeping this temporarily for backward compatibility with auth service implementation
   mock-auth:
     build: ./services/auth
     container_name: cloud-bank-mock-auth
