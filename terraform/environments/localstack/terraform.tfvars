@@ -13,6 +13,7 @@ db_instance_class = "db.t3.micro"
 db_name           = "cloudbank"
 db_username       = "admin"
 db_password       = "LocalDev123!"
+enable_rds_instance = true
 
 # Storage
 kyc_bucket_name        = "cloud-bank-kyc-documents-local"

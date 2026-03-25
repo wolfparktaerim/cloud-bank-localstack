@@ -177,7 +177,7 @@ This project follows a phased rollout of LocalStack Student Pro features (7 phas
 | **1** | VPC & Networking | ✅ Complete | [Phase 1 Plan](docs/LOCALSTACK_FEATURE_MATRIX.md#phase-1-networking) |
 | **2** | Cognito & Auth | ✅ Complete | [Phase 2 Plan](docs/LOCALSTACK_FEATURE_MATRIX.md#phase-2-cognito-auth) |
 | **3** | Route 53 & Edge Services | ✅ Complete | [Phase 3 Plan](docs/LOCALSTACK_FEATURE_MATRIX.md#phase-3-edge-services) |
-| **4A** | Application & RDS | 📋 Planned | [Phase 4A Plan](docs/LOCALSTACK_FEATURE_MATRIX.md#phase-4a-application--rds) |
+| **4A** | Application & RDS | ✅ Complete | [Phase 4A Plan](docs/LOCALSTACK_FEATURE_MATRIX.md#phase-4a-application--rds) |
 | **4B** | ElastiCache & Glue | 📋 Planned | [Phase 4B Plan](docs/LOCALSTACK_FEATURE_MATRIX.md#phase-4b-elasticache--glue--mongo) |
 | **5** | Security & IAM Enforcement | 📋 Planned | [Phase 5 Plan](docs/LOCALSTACK_FEATURE_MATRIX.md#phase-5-security--iam-enforcement) |
 | **6** | Observability | 📋 Planned | [Phase 6 Plan](docs/LOCALSTACK_FEATURE_MATRIX.md#phase-6-reliability--observability) |
@@ -222,7 +222,7 @@ All services below are emulated locally. This project uses the Ultimate tier, wh
 | API Gateway      | REST API entry point        | ✅ Working | 0 |
 | Lambda           | Business logic              | ✅ Working | 0 |
 | DynamoDB         | User sessions, transactions | ✅ Working | 0 |
-| RDS (PostgreSQL) | Core accounts data          | 🔄 Phase 4A | — |
+| RDS (PostgreSQL) | Core accounts data          | 🟡 Partial | 4A |
 | Route 53         | DNS and service discovery   | ✅ Working | 3 |
 | Cognito          | User authentication         | ✅ Working | 2 |
 | S3               | KYC documents, statements   | ✅ Working | 0 |

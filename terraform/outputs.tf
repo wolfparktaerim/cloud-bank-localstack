@@ -18,6 +18,11 @@ output "rds_endpoint" {
   value       = module.database.rds_endpoint
 }
 
+output "rds_instance_identifier" {
+  description = "RDS PostgreSQL instance identifier"
+  value       = module.database.rds_instance_identifier
+}
+
 output "dynamodb_tables" {
   description = "DynamoDB table names"
   value       = module.database.dynamodb_table_names

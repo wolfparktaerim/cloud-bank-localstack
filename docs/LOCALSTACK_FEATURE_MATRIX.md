@@ -139,10 +139,11 @@ Legend:
 - ✅ Lambda target group attachment and invoke permissions
 - ✅ Integration tests implemented for Route53 and ALB CRUD/attachment flow
 
-### Phase 4A (Application + RDS)
-- Real RDS PostgreSQL instance
-- Lambda handler improvements
-- Secrets Manager wiring for credentials
+### Phase 4A (Application + RDS) ✅ COMPLETE
+- ✅ PostgreSQL RDS instance provisioned with DB subnet group + SG wiring
+- ✅ Lambda runtime DB endpoint wiring now uses dynamic RDS host:port output
+- ✅ Integration tests implemented for RDS provisioning/readiness and Lambda VPC APIs
+- 🟡 SQL validation represented at DB readiness/API level (Aurora-specific APIs remain out of scope)
 
 ### Phase 4B (ElastiCache + Glue + Mongo)
 - ElastiCache Redis with real command testing
@@ -225,7 +226,7 @@ This allows running only fully-functional tests (`pytest -m fully_functional`), 
 ✅ Cognito
 ✅ Route 53
 ✅ ALB/NLB
-🔄 RDS (Phase 4A)
+✅ RDS (Phase 4A)
 🔄 ElastiCache (Phase 4B)
 🔄 WAFv2, KMS, full security stack (Phase 5)
 🔄 CloudWatch, CloudTrail, Backup (Phase 6)

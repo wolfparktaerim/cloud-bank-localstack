@@ -25,6 +25,12 @@ variable "db_password" {
   default   = "LocalDev123!"
 }
 
+variable "enable_rds_instance" {
+  description = "Whether to create PostgreSQL RDS instance (Phase 4A)"
+  type        = bool
+  default     = true
+}
+
 # Phase 1: DB subnet IDs for subnet group (from networking module)
 variable "db_subnet_ids" {
   description = "Subnet IDs for RDS DB subnet group (private subnets from Phase 1 networking)"
@@ -33,5 +39,10 @@ variable "db_subnet_ids" {
 
 variable "vpc_id" {
   description = "VPC ID from networking module"
+  type        = string
+}
+
+variable "rds_security_group_id" {
+  description = "Security group ID for RDS ingress from Lambda"
   type        = string
 }

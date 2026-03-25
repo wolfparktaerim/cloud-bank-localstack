@@ -68,6 +68,12 @@ variable "db_password" {
   sensitive   = true
 }
 
+variable "enable_rds_instance" {
+  description = "Enable PostgreSQL RDS instance provisioning for Phase 4A"
+  type        = bool
+  default     = true
+}
+
 # ── S3 ───────────────────────────────────────
 variable "kyc_bucket_name" {
   description = "S3 bucket for KYC documents"

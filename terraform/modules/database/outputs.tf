@@ -1,6 +1,16 @@
 output "rds_endpoint" {
-  value       = "localhost:5432"
-  description = "RDS not available in LocalStack community — using DynamoDB instead"
+  value       = try(aws_db_instance.postgres[0].endpoint, "localhost:5432")
+  description = "RDS PostgreSQL endpoint address"
+}
+
+output "rds_instance_identifier" {
+  value       = try(aws_db_instance.postgres[0].id, null)
+  description = "RDS instance identifier"
+}
+
+output "rds_port" {
+  value       = try(aws_db_instance.postgres[0].port, 5432)
+  description = "RDS PostgreSQL port"
 }
 
 output "dynamodb_table_names" {

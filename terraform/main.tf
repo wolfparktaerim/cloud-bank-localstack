@@ -37,10 +37,16 @@ module "database" {
   project_name = var.project_name
   environment  = var.environment
   tags         = local.common_tags
+  db_instance_class = var.db_instance_class
+  db_name           = var.db_name
+  db_username       = var.db_username
+  db_password       = var.db_password
+  enable_rds_instance = var.enable_rds_instance
   
   # Phase 1: Wire networking to database
-  db_subnet_ids = module.networking.db_subnet_ids
-  vpc_id        = module.networking.vpc_id
+  db_subnet_ids         = module.networking.db_subnet_ids
+  vpc_id                = module.networking.vpc_id
+  rds_security_group_id = module.networking.rds_security_group_id
 }
 
 module "messaging" {
