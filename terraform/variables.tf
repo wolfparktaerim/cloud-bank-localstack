@@ -118,3 +118,16 @@ variable "enable_cognito_hosted_ui_domain" {
   type        = bool
   default     = false
 }
+
+# ── Phase 3: Edge services ───────────────────
+variable "route53_zone_name" {
+  description = "Hosted zone name for Route53 local DNS"
+  type        = string
+  default     = "cloud-bank.local"
+}
+
+variable "route53_record_name" {
+  description = "DNS record name that points to API ALB"
+  type        = string
+  default     = "api.cloud-bank.local"
+}

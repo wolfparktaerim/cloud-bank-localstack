@@ -11,3 +11,10 @@ output "lambda_function_names" {
     k => fn.function_name
   }
 }
+
+output "lambda_function_arns" {
+  value = {
+    for k, fn in aws_lambda_function.service :
+    k => fn.arn
+  }
+}

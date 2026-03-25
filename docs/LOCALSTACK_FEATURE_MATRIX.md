@@ -133,9 +133,11 @@ Legend:
 - ✅ API authorization behavior tests added (valid JWT accepted, missing JWT denied)
 - ✅ MFA configuration path validated at API level (simulated)
 
-### Phase 3 (Edge Services)
-- Route 53 hosted zones and records
-- ALB/NLB with listeners and target groups
+### Phase 3 (Edge Services) ✅ COMPLETE
+- ✅ Route53 hosted zone and CNAME record for API domain
+- ✅ Application Load Balancer with HTTP listener in public subnets
+- ✅ Lambda target group attachment and invoke permissions
+- ✅ Integration tests implemented for Route53 and ALB CRUD/attachment flow
 
 ### Phase 4A (Application + RDS)
 - Real RDS PostgreSQL instance
@@ -221,8 +223,8 @@ This allows running only fully-functional tests (`pytest -m fully_functional`), 
 ## Quick Reference: What Requires Phase Implementation
 
 ✅ Cognito
-🔄 Route 53 (Phase 3)
-🔄 ALB/NLB (Phase 3)
+✅ Route 53
+✅ ALB/NLB
 🔄 RDS (Phase 4A)
 🔄 ElastiCache (Phase 4B)
 🔄 WAFv2, KMS, full security stack (Phase 5)

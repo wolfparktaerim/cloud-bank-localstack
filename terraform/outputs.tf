@@ -37,3 +37,18 @@ output "cognito_hosted_ui_domain" {
   description = "Cognito hosted UI domain"
   value       = module.cognito.hosted_ui_domain
 }
+
+output "route53_zone_id" {
+  description = "Route53 hosted zone ID"
+  value       = module.edge.hosted_zone_id
+}
+
+output "alb_dns_name" {
+  description = "Application Load Balancer DNS name"
+  value       = module.edge.alb_dns_name
+}
+
+output "api_dns_record" {
+  description = "Route53 DNS record pointing to ALB"
+  value       = module.edge.api_record_fqdn
+}

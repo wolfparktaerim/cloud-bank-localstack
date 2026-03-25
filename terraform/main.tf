@@ -88,6 +88,20 @@ module "api_gateway" {
   tags               = local.common_tags
 }
 
+module "edge" {
+  source = "./modules/edge"
+
+  project_name                = var.project_name
+  environment                 = var.environment
+  tags                        = local.common_tags
+  vpc_id                      = module.networking.vpc_id
+  public_subnet_ids           = module.networking.public_subnet_ids
+  lambda_target_function_name = module.compute.lambda_function_names["accounts"]
+  lambda_target_function_arn  = module.compute.lambda_function_arns["accounts"]
+  route53_zone_name           = var.route53_zone_name
+  route53_record_name         = var.route53_record_name
+}
+
 module "monitoring" {
   source       = "./modules/monitoring"
   project_name = var.project_name

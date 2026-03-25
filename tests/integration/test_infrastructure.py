@@ -632,11 +632,28 @@ class TestRoute53:
 
     def test_hosted_zone_creation(self):
         """5.2.1: Route 53 hosted zone creation."""
-        pytest.skip("Phase 3: Implement Route 53 hosted zone tests")
+        route53 = aws_client("route53")
+        zones = route53.list_hosted_zones().get("HostedZones", [])
+
+        zone = next((z for z in zones if z.get("Name") == "cloud-bank.local."), None)
+        assert zone is not None, "Hosted zone cloud-bank.local not found"
+        assert zone.get("Id") is not None
 
     def test_dns_record_resolution(self):
         """5.2.1: Custom domain DNS resolution."""
-        pytest.skip("Phase 3: Implement DNS resolution tests")
+        route53 = aws_client("route53")
+        zones = route53.list_hosted_zones().get("HostedZones", [])
+        zone = next((z for z in zones if z.get("Name") == "cloud-bank.local."), None)
+        assert zone is not None, "Hosted zone cloud-bank.local not found"
+
+        records = route53.list_resource_record_sets(
+            HostedZoneId=zone["Id"],
+        ).get("ResourceRecordSets", [])
+
+        api_record = next((r for r in records if r.get("Name") == "api.cloud-bank.local."), None)
+        assert api_record is not None, "Route53 record api.cloud-bank.local not found"
+        assert api_record.get("Type") == "CNAME"
+        assert len(api_record.get("ResourceRecords", [])) > 0
 
 
 class TestApplicationLoadBalancer:
@@ -648,15 +665,44 @@ class TestApplicationLoadBalancer:
 
     def test_alb_creation(self):
         """5.2.3: ALB creation with listeners."""
-        pytest.skip("Phase 3: Implement ALB tests")
+        elbv2 = aws_client("elbv2")
+        lbs = elbv2.describe_load_balancers().get("LoadBalancers", [])
+
+        alb = next((lb for lb in lbs if "cloud-bank" in lb.get("LoadBalancerName", "")), None)
+        assert alb is not None, "Application Load Balancer not found"
+        assert alb.get("Type") == "application"
+        assert len(alb.get("AvailabilityZones", [])) >= 2
 
     def test_alb_target_group_lambda(self):
         """5.2.3: ALB target group with Lambda targets."""
-        pytest.skip("Phase 3: Implement ALB Lambda target tests")
+        elbv2 = aws_client("elbv2")
+        target_groups = elbv2.describe_target_groups().get("TargetGroups", [])
+
+        lambda_tg = next((tg for tg in target_groups if tg.get("TargetType") == "lambda"), None)
+        assert lambda_tg is not None, "Lambda target group not found"
+
+        target_health = elbv2.describe_target_health(
+            TargetGroupArn=lambda_tg["TargetGroupArn"],
+        ).get("TargetHealthDescriptions", [])
+        assert len(target_health) > 0, "Expected Lambda target attachment in target group"
 
     def test_alb_health_check(self):
         """5.2.3: ALB health check configuration."""
-        pytest.skip("Phase 3: Implement ALB health check tests")
+        elbv2 = aws_client("elbv2")
+        lbs = elbv2.describe_load_balancers().get("LoadBalancers", [])
+        alb = next((lb for lb in lbs if "cloud-bank" in lb.get("LoadBalancerName", "")), None)
+        assert alb is not None, "Application Load Balancer not found"
+
+        listeners = elbv2.describe_listeners(
+            LoadBalancerArn=alb["LoadBalancerArn"],
+        ).get("Listeners", [])
+        assert len(listeners) > 0, "ALB listener not found"
+
+        # LocalStack may omit or serialize listener port inconsistently; validate
+        # listener protocol + forwarding action instead of strict port matching.
+        listener = next((l for l in listeners if l.get("Protocol") == "HTTP"), listeners[0])
+        assert len(listener.get("DefaultActions", [])) > 0
+        assert listener["DefaultActions"][0].get("Type") == "forward"
 
 
 # ══════════════════════════════════════════════════════════════

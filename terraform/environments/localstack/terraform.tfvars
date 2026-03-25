@@ -27,3 +27,7 @@ cognito_callback_urls = ["http://localhost:3000/callback"]
 cognito_logout_urls   = ["http://localhost:3000/logout"]
 cognito_domain_prefix = "cloud-bank-local-auth"
 enable_cognito_hosted_ui_domain = false
+
+# Phase 3: Edge services
+route53_zone_name   = "cloud-bank.local"
+route53_record_name = "api.cloud-bank.local"
