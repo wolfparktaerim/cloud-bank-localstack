@@ -44,3 +44,9 @@ glue_s3_target_path    = "s3://cloud-bank-statements-local/glue"
 # Phase 5: Security
 acm_domain_name = "cloud-bank.local"
 enable_guardduty = false
+
+# Phase 6: Observability
+cloudtrail_s3_bucket_name = "cloud-bank-statements-local"
+cloudtrail_trail_name     = "cloud-bank-audit-trail"
+backup_vault_name         = "cloud-bank-backup-vault"
+backup_plan_name          = "cloud-bank-backup-plan"

@@ -143,5 +143,9 @@ module "monitoring" {
   source       = "./modules/monitoring"
   project_name = var.project_name
   environment  = var.environment
+  cloudtrail_s3_bucket_name = var.cloudtrail_s3_bucket_name
+  cloudtrail_trail_name     = var.cloudtrail_trail_name
+  backup_vault_name         = var.backup_vault_name
+  backup_plan_name          = var.backup_plan_name
   tags         = local.common_tags
 }

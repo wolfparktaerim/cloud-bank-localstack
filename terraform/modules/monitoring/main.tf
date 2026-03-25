@@ -44,3 +44,45 @@ resource "aws_cloudwatch_metric_alarm" "transaction_queue_depth" {
 
   tags = var.tags
 }
+
+resource "aws_cloudwatch_log_group" "transactions_lambda" {
+  name              = "/aws/lambda/${var.project_name}-transactions"
+  retention_in_days = 7
+
+  tags = var.tags
+}
+
+resource "aws_cloudtrail" "main" {
+  name                          = var.cloudtrail_trail_name
+  s3_bucket_name                = var.cloudtrail_s3_bucket_name
+  include_global_service_events = true
+  is_multi_region_trail         = false
+  enable_log_file_validation    = false
+
+  event_selector {
+    read_write_type           = "All"
+    include_management_events = true
+  }
+
+  tags = var.tags
+}
+
+resource "aws_backup_vault" "main" {
+  name = var.backup_vault_name
+
+  tags = var.tags
+}
+
+resource "aws_backup_plan" "main" {
+  name = var.backup_plan_name
+
+  rule {
+    rule_name         = "daily"
+    target_vault_name = aws_backup_vault.main.name
+    schedule          = "cron(0 5 * * ? *)"
+    start_window      = 60
+    completion_window = 120
+  }
+
+  tags = var.tags
+}

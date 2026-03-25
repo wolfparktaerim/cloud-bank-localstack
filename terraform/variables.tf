@@ -187,3 +187,28 @@ variable "enable_guardduty" {
   type        = bool
   default     = false
 }
+
+# ── Phase 6: Observability ───────────────────
+variable "cloudtrail_s3_bucket_name" {
+  description = "S3 bucket for CloudTrail logs"
+  type        = string
+  default     = "cloud-bank-statements-local"
+}
+
+variable "cloudtrail_trail_name" {
+  description = "CloudTrail trail name"
+  type        = string
+  default     = "cloud-bank-audit-trail"
+}
+
+variable "backup_vault_name" {
+  description = "AWS Backup vault name"
+  type        = string
+  default     = "cloud-bank-backup-vault"
+}
+
+variable "backup_plan_name" {
+  description = "AWS Backup plan name"
+  type        = string
+  default     = "cloud-bank-backup-plan"
+}

@@ -180,7 +180,7 @@ This project follows a phased rollout of LocalStack Student Pro features (7 phas
 | **4A** | Application & RDS | ✅ Complete | [Phase 4A Plan](docs/LOCALSTACK_FEATURE_MATRIX.md#phase-4a-application--rds) |
 | **4B** | ElastiCache & Glue | ✅ Complete | [Phase 4B Plan](docs/LOCALSTACK_FEATURE_MATRIX.md#phase-4b-elasticache--glue--mongo) |
 | **5** | Security & IAM Enforcement | ✅ Complete | [Phase 5 Plan](docs/LOCALSTACK_FEATURE_MATRIX.md#phase-5-security--iam-enforcement) |
-| **6** | Observability | 📋 Planned | [Phase 6 Plan](docs/LOCALSTACK_FEATURE_MATRIX.md#phase-6-reliability--observability) |
+| **6** | Observability | ✅ Complete | [Phase 6 Plan](docs/LOCALSTACK_FEATURE_MATRIX.md#phase-6-reliability--observability) |
 
 See [docs/LOCALSTACK_FEATURE_MATRIX.md](docs/LOCALSTACK_FEATURE_MATRIX.md) for the complete feature-by-feature support matrix with status labels and test scaffolding.
 
@@ -236,8 +236,9 @@ All services below are emulated locally. This project uses the Ultimate tier, wh
 | ELBv2 (ALB/NLB)  | Load balancing              | ✅ Working | 3 |
 | WAFv2            | Web application firewall    | 🟡 Partial | 5 |
 | GuardDuty        | Threat detection            | 🟡 Partial | 5 |
-| CloudTrail       | Audit logging               | 🔄 Phase 6 | — |
+| CloudTrail       | Audit logging               | ✅ Working | 6 |
 | Glue             | Catalog + ETL metadata      | 🟡 Partial | 4B |
+| Backup           | Backup plans & lifecycle    | 🟡 Partial | 6 |
 
 **Full feature matrix:** See [docs/LOCALSTACK_FEATURE_MATRIX.md](docs/LOCALSTACK_FEATURE_MATRIX.md) for detailed status (fully-functional / partial / api-valid / skip).
 

@@ -102,3 +102,18 @@ output "acm_certificate_arn" {
   description = "ACM certificate ARN"
   value       = module.security.acm_certificate_arn
 }
+
+output "cloudtrail_arn" {
+  description = "CloudTrail ARN"
+  value       = module.monitoring.cloudtrail_arn
+}
+
+output "backup_vault_name" {
+  description = "Backup vault name"
+  value       = module.monitoring.backup_vault_name
+}
+
+output "backup_plan_id" {
+  description = "Backup plan ID"
+  value       = module.monitoring.backup_plan_id
+}
