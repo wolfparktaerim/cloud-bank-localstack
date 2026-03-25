@@ -137,3 +137,40 @@ variable "route53_record_name" {
   type        = string
   default     = "api.cloud-bank.local"
 }
+
+# ── Phase 4B: Data platform ──────────────────
+variable "enable_elasticache" {
+  description = "Enable ElastiCache Redis provisioning"
+  type        = bool
+  default     = true
+}
+
+variable "enable_glue" {
+  description = "Enable AWS Glue catalog/crawler/job provisioning"
+  type        = bool
+  default     = true
+}
+
+variable "elasticache_cluster_id" {
+  description = "ElastiCache cluster identifier"
+  type        = string
+  default     = "cloud-bank-redis"
+}
+
+variable "glue_database_name" {
+  description = "Glue catalog database name"
+  type        = string
+  default     = "cloud_bank_analytics"
+}
+
+variable "glue_table_name" {
+  description = "Glue catalog table name"
+  type        = string
+  default     = "transactions_raw"
+}
+
+variable "glue_s3_target_path" {
+  description = "S3 path used by Glue table and crawler"
+  type        = string
+  default     = "s3://cloud-bank-statements-local/glue"
+}

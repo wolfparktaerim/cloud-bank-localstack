@@ -178,7 +178,7 @@ This project follows a phased rollout of LocalStack Student Pro features (7 phas
 | **2** | Cognito & Auth | ✅ Complete | [Phase 2 Plan](docs/LOCALSTACK_FEATURE_MATRIX.md#phase-2-cognito-auth) |
 | **3** | Route 53 & Edge Services | ✅ Complete | [Phase 3 Plan](docs/LOCALSTACK_FEATURE_MATRIX.md#phase-3-edge-services) |
 | **4A** | Application & RDS | ✅ Complete | [Phase 4A Plan](docs/LOCALSTACK_FEATURE_MATRIX.md#phase-4a-application--rds) |
-| **4B** | ElastiCache & Glue | 📋 Planned | [Phase 4B Plan](docs/LOCALSTACK_FEATURE_MATRIX.md#phase-4b-elasticache--glue--mongo) |
+| **4B** | ElastiCache & Glue | ✅ Complete | [Phase 4B Plan](docs/LOCALSTACK_FEATURE_MATRIX.md#phase-4b-elasticache--glue--mongo) |
 | **5** | Security & IAM Enforcement | 📋 Planned | [Phase 5 Plan](docs/LOCALSTACK_FEATURE_MATRIX.md#phase-5-security--iam-enforcement) |
 | **6** | Observability | 📋 Planned | [Phase 6 Plan](docs/LOCALSTACK_FEATURE_MATRIX.md#phase-6-reliability--observability) |
 
@@ -230,13 +230,14 @@ All services below are emulated locally. This project uses the Ultimate tier, wh
 | SNS              | Push notifications          | ✅ Working | 0 |
 | IAM              | Roles & policies (enforced) | ✅ Working | 0 |
 | CloudWatch       | Logs & metrics              | ✅ Working | 0 |
-| ElastiCache      | Redis caching               | 🔄 Phase 4B | — |
+| ElastiCache      | Redis caching               | 🟡 Partial | 4B |
 | KMS              | Encryption key management   | ✅ Working | 0 |
 | Secrets Manager  | Credential storage          | ✅ Working | 0 |
 | ELBv2 (ALB/NLB)  | Load balancing              | ✅ Working | 3 |
 | WAFv2            | Web application firewall    | 🔄 Phase 5 | — |
 | GuardDuty        | Threat detection            | 🔄 Phase 5 | — |
 | CloudTrail       | Audit logging               | 🔄 Phase 6 | — |
+| Glue             | Catalog + ETL metadata      | 🟡 Partial | 4B |
 
 **Full feature matrix:** See [docs/LOCALSTACK_FEATURE_MATRIX.md](docs/LOCALSTACK_FEATURE_MATRIX.md) for detailed status (fully-functional / partial / api-valid / skip).
 

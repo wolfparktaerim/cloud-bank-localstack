@@ -32,3 +32,11 @@ enable_cognito_hosted_ui_domain = false
 # Phase 3: Edge services
 route53_zone_name   = "cloud-bank.local"
 route53_record_name = "api.cloud-bank.local"
+
+# Phase 4B: Data platform
+enable_elasticache     = true
+enable_glue            = true
+elasticache_cluster_id = "cloud-bank-redis"
+glue_database_name     = "cloud_bank_analytics"
+glue_table_name        = "transactions_raw"
+glue_s3_target_path    = "s3://cloud-bank-statements-local/glue"

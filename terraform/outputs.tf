@@ -57,3 +57,23 @@ output "api_dns_record" {
   description = "Route53 DNS record pointing to ALB"
   value       = module.edge.api_record_fqdn
 }
+
+output "elasticache_cluster_id" {
+  description = "ElastiCache Redis cluster id"
+  value       = module.data_platform.elasticache_cluster_id
+}
+
+output "elasticache_endpoint" {
+  description = "ElastiCache Redis endpoint"
+  value       = module.data_platform.elasticache_endpoint
+}
+
+output "glue_database_name" {
+  description = "Glue database name"
+  value       = module.data_platform.glue_database_name
+}
+
+output "glue_crawler_name" {
+  description = "Glue crawler name"
+  value       = module.data_platform.glue_crawler_name
+}

@@ -56,6 +56,15 @@ services:
       - PORT=5003
     restart: on-failure
 
+  mongodb:
+    image: mongo:7
+    container_name: cloud-bank-mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=cloudbank
+    restart: on-failure
+
 networks:
   default:
     name: cloud-bank-network

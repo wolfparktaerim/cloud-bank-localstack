@@ -108,6 +108,23 @@ module "edge" {
   route53_record_name         = var.route53_record_name
 }
 
+module "data_platform" {
+  source = "./modules/data_platform"
+
+  project_name              = var.project_name
+  environment               = var.environment
+  tags                      = local.common_tags
+  vpc_id                    = module.networking.vpc_id
+  private_subnet_ids        = module.networking.private_subnet_ids
+  lambda_security_group_id  = module.networking.lambda_security_group_id
+  enable_elasticache        = var.enable_elasticache
+  enable_glue               = var.enable_glue
+  elasticache_cluster_id    = var.elasticache_cluster_id
+  glue_database_name        = var.glue_database_name
+  glue_table_name           = var.glue_table_name
+  glue_s3_target_path       = var.glue_s3_target_path
+}
+
 module "monitoring" {
   source       = "./modules/monitoring"
   project_name = var.project_name

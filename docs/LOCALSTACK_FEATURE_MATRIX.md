@@ -145,10 +145,11 @@ Legend:
 - ✅ Integration tests implemented for RDS provisioning/readiness and Lambda VPC APIs
 - 🟡 SQL validation represented at DB readiness/API level (Aurora-specific APIs remain out of scope)
 
-### Phase 4B (ElastiCache + Glue + Mongo)
-- ElastiCache Redis with real command testing
-- Glue databases, crawlers, jobs
-- MongoDB sidecar container
+### Phase 4B (ElastiCache + Glue + Mongo) ✅ COMPLETE
+- ✅ ElastiCache Redis cluster + subnet group + SG wiring provisioned
+- ✅ Glue catalog database, external table, crawler, and ETL job provisioned
+- ✅ Integration tests implemented for Redis and Glue resource readiness
+- 🟡 MongoDB sidecar checks implemented with conditional skip when sidecar or `pymongo` is unavailable
 
 ### Phase 5 (Security + IAM Enforcement)
 - ENFORCE_IAM=1 validation workflows
@@ -227,7 +228,8 @@ This allows running only fully-functional tests (`pytest -m fully_functional`), 
 ✅ Route 53
 ✅ ALB/NLB
 ✅ RDS (Phase 4A)
-🔄 ElastiCache (Phase 4B)
+✅ ElastiCache (Phase 4B)
+✅ Glue (Phase 4B)
 🔄 WAFv2, KMS, full security stack (Phase 5)
 🔄 CloudWatch, CloudTrail, Backup (Phase 6)
 
