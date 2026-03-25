@@ -18,7 +18,15 @@ import requests
 ENDPOINT = os.getenv("LOCALSTACK_ENDPOINT", "http://localhost:4566")
 REGION = "ap-southeast-1"
 AUTH_URL = os.getenv("AUTH_MOCK_URL", "http://localhost:5001")
-NOTIF_URL = os.getenv("NOTIFICATIONS_MOCK_URL", "http://localhost:5002")
+NOTIF_URL = os.getenv("NOTIFICATIONS_MOCK_URL", "http://localhost:5004")
+
+
+def _service_is_reachable(url: str, timeout: float = 1.5) -> bool:
+    try:
+        requests.get(f"{url}/health", timeout=timeout)
+        return True
+    except requests.RequestException:
+        return False
 
 
 def aws_client(service: str):
@@ -200,9 +208,11 @@ class TestMockAuth:
         assert r.json()["status"] == "ok"
 
     def test_register_and_login(self):
+        unique_email = f"integration-test-{uuid.uuid4().hex[:8]}@example.com"
+
         # Register
         r = requests.post(f"{AUTH_URL}/register", json={
-            "email": "integration-test@example.com",
+            "email": unique_email,
             "password": "TestPass123!",
             "full_name": "Integration Test",
         }, timeout=5)
@@ -212,7 +222,7 @@ class TestMockAuth:
 
         # Login
         r = requests.post(f"{AUTH_URL}/login", json={
-            "email": "integration-test@example.com",
+            "email": unique_email,
             "password": "TestPass123!",
         }, timeout=5)
         assert r.status_code == 200, f"Login failed: {r.text}"
@@ -238,6 +248,11 @@ class TestMockAuth:
 
 # ── Mock Notifications Tests ──────────────────
 class TestMockNotifications:
+    @pytest.fixture(autouse=True)
+    def _require_notifications_service(self):
+        if not _service_is_reachable(NOTIF_URL):
+            pytest.skip(f"Notifications mock service not reachable at {NOTIF_URL}")
+
     def test_notifications_health(self):
         r = requests.get(f"{NOTIF_URL}/health", timeout=5)
         assert r.status_code == 200
@@ -310,9 +325,10 @@ class TestVPCFoundation:
         # Check for ingress rules on common ports
         ingress_ports = set()
         for entry in public_nacl.get("Entries", []):
-            if entry["RuleAction"] == "allow" and "Egress" not in str(entry):
-                if "FromPort" in entry:
-                    ingress_ports.add(entry["FromPort"])
+            if entry.get("RuleAction") == "allow" and entry.get("Egress") is False:
+                port_range = entry.get("PortRange", {})
+                if "From" in port_range:
+                    ingress_ports.add(port_range["From"])
         
         assert 80 in ingress_ports or 443 in ingress_ports, f"Expected public ports in NACL. Found: {ingress_ports}"
 
@@ -351,10 +367,15 @@ class TestVPCFoundation:
         rds_sg = rds_sgs[0]
         lambda_sg_id = lambda_sgs[0]["GroupId"]
         
-        has_lambda_ingress = any(
-            rule.get("SourceSecurityGroupInfo", {}).get("GroupId") == lambda_sg_id
-            for rule in rds_sg.get("IpPermissions", [])
-        )
+        has_lambda_ingress = False
+        for rule in rds_sg.get("IpPermissions", []):
+            source_sg = rule.get("SourceSecurityGroupInfo", {}).get("GroupId")
+            user_group_pairs = rule.get("UserIdGroupPairs", [])
+            pair_match = any(pair.get("GroupId") == lambda_sg_id for pair in user_group_pairs)
+            if source_sg == lambda_sg_id or pair_match:
+                has_lambda_ingress = True
+                break
+
         assert has_lambda_ingress, "RDS SG should have ingress from Lambda SG"
 
     def test_internet_gateway_attachment(self):

@@ -81,6 +81,11 @@ resource "aws_lambda_function" "service" {
     Service = each.key
   })
 
+  lifecycle {
+    # LocalStack may not preserve reserved concurrency semantics consistently.
+    ignore_changes = [reserved_concurrent_executions]
+  }
+
   depends_on = [data.archive_file.placeholder_zip]
 }
 

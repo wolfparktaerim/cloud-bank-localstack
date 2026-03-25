@@ -15,6 +15,10 @@ resource "aws_cognito_user_pool" "main" {
     enabled = true
   }
 
+  user_pool_add_ons {
+    advanced_security_mode = "OFF"
+  }
+
   password_policy {
     minimum_length                   = 8
     require_lowercase                = true

@@ -171,4 +171,9 @@ resource "aws_db_instance" "postgres" {
     Name    = "${var.project_name}-postgres"
     Purpose = "Core banking relational datastore (Phase 4A)"
   })
+
+  lifecycle {
+    # LocalStack commonly normalizes this value to 0 regardless of desired config.
+    ignore_changes = [max_allocated_storage]
+  }
 }

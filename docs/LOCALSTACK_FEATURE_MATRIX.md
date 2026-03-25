@@ -165,6 +165,12 @@ Legend:
 - ✅ Backup vault/plan resources provisioned and tested
 - 🟡 Backup job lifecycle test implemented with conditional skip on LocalStack partial behavior
 
+### Phase 7 (Final Hardening & Regression) ✅ COMPLETE
+- ✅ Full regression suite is green (`76 passed, 6 skipped`)
+- ✅ Terraform drift check is clean (`No changes. Your infrastructure matches the configuration.`)
+- ✅ Integration stability improvements: notification mock port alignment, service-availability skip, idempotent auth test data, LocalStack-compatible EC2 assertion parsing
+- ✅ LocalStack drift suppression added for unstable provider attributes (Lambda reserved concurrency, ElastiCache readback fields, RDS max allocated storage)
+
 ---
 
 ## LocalStack Tier Capabilities

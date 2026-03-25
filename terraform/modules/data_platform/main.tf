@@ -32,6 +32,11 @@ resource "aws_elasticache_subnet_group" "redis" {
   tags = merge(var.tags, {
     Name = "${var.project_name}-redis-subnet-group"
   })
+
+  lifecycle {
+    # LocalStack may omit persisted subnet IDs for ElastiCache subnet groups.
+    ignore_changes = [subnet_ids]
+  }
 }
 
 resource "aws_elasticache_cluster" "redis" {
@@ -47,6 +52,11 @@ resource "aws_elasticache_cluster" "redis" {
   tags = merge(var.tags, {
     Name = var.elasticache_cluster_id
   })
+
+  lifecycle {
+    # LocalStack may not return SG IDs on read even when configured.
+    ignore_changes = [security_group_ids]
+  }
 }
 
 resource "aws_iam_role" "glue" {
