@@ -77,3 +77,28 @@ output "glue_crawler_name" {
   description = "Glue crawler name"
   value       = module.data_platform.glue_crawler_name
 }
+
+output "kms_key_arn" {
+  description = "Primary KMS key ARN"
+  value       = module.security.kms_key_arn
+}
+
+output "rds_secret_arn" {
+  description = "Secrets Manager secret ARN for RDS credentials"
+  value       = module.security.rds_secret_arn
+}
+
+output "waf_web_acl_arn" {
+  description = "WAFv2 Web ACL ARN"
+  value       = module.security.waf_web_acl_arn
+}
+
+output "guardduty_detector_id" {
+  description = "GuardDuty detector ID"
+  value       = module.security.guardduty_detector_id
+}
+
+output "acm_certificate_arn" {
+  description = "ACM certificate ARN"
+  value       = module.security.acm_certificate_arn
+}

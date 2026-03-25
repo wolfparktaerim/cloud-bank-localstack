@@ -40,3 +40,7 @@ elasticache_cluster_id = "cloud-bank-redis"
 glue_database_name     = "cloud_bank_analytics"
 glue_table_name        = "transactions_raw"
 glue_s3_target_path    = "s3://cloud-bank-statements-local/glue"
+
+# Phase 5: Security
+acm_domain_name = "cloud-bank.local"
+enable_guardduty = false

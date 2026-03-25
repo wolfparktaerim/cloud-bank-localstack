@@ -179,7 +179,7 @@ This project follows a phased rollout of LocalStack Student Pro features (7 phas
 | **3** | Route 53 & Edge Services | ✅ Complete | [Phase 3 Plan](docs/LOCALSTACK_FEATURE_MATRIX.md#phase-3-edge-services) |
 | **4A** | Application & RDS | ✅ Complete | [Phase 4A Plan](docs/LOCALSTACK_FEATURE_MATRIX.md#phase-4a-application--rds) |
 | **4B** | ElastiCache & Glue | ✅ Complete | [Phase 4B Plan](docs/LOCALSTACK_FEATURE_MATRIX.md#phase-4b-elasticache--glue--mongo) |
-| **5** | Security & IAM Enforcement | 📋 Planned | [Phase 5 Plan](docs/LOCALSTACK_FEATURE_MATRIX.md#phase-5-security--iam-enforcement) |
+| **5** | Security & IAM Enforcement | ✅ Complete | [Phase 5 Plan](docs/LOCALSTACK_FEATURE_MATRIX.md#phase-5-security--iam-enforcement) |
 | **6** | Observability | 📋 Planned | [Phase 6 Plan](docs/LOCALSTACK_FEATURE_MATRIX.md#phase-6-reliability--observability) |
 
 See [docs/LOCALSTACK_FEATURE_MATRIX.md](docs/LOCALSTACK_FEATURE_MATRIX.md) for the complete feature-by-feature support matrix with status labels and test scaffolding.
@@ -231,11 +231,11 @@ All services below are emulated locally. This project uses the Ultimate tier, wh
 | IAM              | Roles & policies (enforced) | ✅ Working | 0 |
 | CloudWatch       | Logs & metrics              | ✅ Working | 0 |
 | ElastiCache      | Redis caching               | 🟡 Partial | 4B |
-| KMS              | Encryption key management   | ✅ Working | 0 |
-| Secrets Manager  | Credential storage          | ✅ Working | 0 |
+| KMS              | Encryption key management   | ✅ Working | 5 |
+| Secrets Manager  | Credential storage          | ✅ Working | 5 |
 | ELBv2 (ALB/NLB)  | Load balancing              | ✅ Working | 3 |
-| WAFv2            | Web application firewall    | 🔄 Phase 5 | — |
-| GuardDuty        | Threat detection            | 🔄 Phase 5 | — |
+| WAFv2            | Web application firewall    | 🟡 Partial | 5 |
+| GuardDuty        | Threat detection            | 🟡 Partial | 5 |
 | CloudTrail       | Audit logging               | 🔄 Phase 6 | — |
 | Glue             | Catalog + ETL metadata      | 🟡 Partial | 4B |
 

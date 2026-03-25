@@ -174,3 +174,16 @@ variable "glue_s3_target_path" {
   type        = string
   default     = "s3://cloud-bank-statements-local/glue"
 }
+
+# ── Phase 5: Security ────────────────────────
+variable "acm_domain_name" {
+  description = "Domain name for ACM certificate request"
+  type        = string
+  default     = "cloud-bank.local"
+}
+
+variable "enable_guardduty" {
+  description = "Enable GuardDuty detector provisioning"
+  type        = bool
+  default     = false
+}

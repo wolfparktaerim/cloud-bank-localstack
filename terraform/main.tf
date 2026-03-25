@@ -125,6 +125,20 @@ module "data_platform" {
   glue_s3_target_path       = var.glue_s3_target_path
 }
 
+module "security" {
+  source = "./modules/security"
+
+  project_name   = var.project_name
+  environment    = var.environment
+  tags           = local.common_tags
+  alb_arn        = module.edge.alb_arn
+  db_username    = var.db_username
+  db_password    = var.db_password
+  db_endpoint    = module.database.rds_endpoint
+  acm_domain_name = var.acm_domain_name
+  enable_guardduty = var.enable_guardduty
+}
+
 module "monitoring" {
   source       = "./modules/monitoring"
   project_name = var.project_name

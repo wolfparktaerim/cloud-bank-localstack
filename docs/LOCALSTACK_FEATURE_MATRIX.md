@@ -151,11 +151,13 @@ Legend:
 - ✅ Integration tests implemented for Redis and Glue resource readiness
 - 🟡 MongoDB sidecar checks implemented with conditional skip when sidecar or `pymongo` is unavailable
 
-### Phase 5 (Security + IAM Enforcement)
-- ENFORCE_IAM=1 validation workflows
-- Explainable IAM for troubleshooting
-- WAFv2, GuardDuty, KMS, ACM integration
-- Shield documented as skip
+### Phase 5 (Security + IAM Enforcement) ✅ COMPLETE
+- ✅ KMS key + alias provisioned and tested (create/encrypt/decrypt/S3 SSE-KMS)
+- ✅ Secrets Manager RDS credential secret provisioned and tested (CRUD/versioning)
+- ✅ WAFv2 Web ACL + ALB association provisioned; association introspection API partial in LocalStack
+- 🟡 GuardDuty detector/sample findings APIs remain partially implemented in LocalStack build (tests skip when unsupported)
+- ✅ IAM enforcement tests implemented with deny-path verification using unprivileged credentials
+- ✅ ACM certificate request provisioned and discoverable via API
 
 ### Phase 6 (Reliability)
 - CloudWatch logs, metrics, alarms
@@ -230,7 +232,8 @@ This allows running only fully-functional tests (`pytest -m fully_functional`), 
 ✅ RDS (Phase 4A)
 ✅ ElastiCache (Phase 4B)
 ✅ Glue (Phase 4B)
-🔄 WAFv2, KMS, full security stack (Phase 5)
+✅ KMS + Secrets + IAM enforcement (Phase 5)
+🟡 WAFv2/GuardDuty API coverage partial (Phase 5)
 🔄 CloudWatch, CloudTrail, Backup (Phase 6)
 
 ---

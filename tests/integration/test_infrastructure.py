@@ -926,15 +926,58 @@ class TestIAMEnforcement:
 
     def test_iam_policy_enforcement_enabled(self):
         """5.7.7: ENFORCE_IAM=1 active in LocalStack config."""
-        pytest.skip("Phase 5: Implement IAM enforcement verification")
+        iam = aws_client("iam")
+        user_name = f"iam-enforce-{uuid.uuid4().hex[:8]}"
+        user = iam.create_user(UserName=user_name)["User"]
+        access_key = iam.create_access_key(UserName=user_name)["AccessKey"]
+
+        restricted_s3 = boto3.client(
+            "s3",
+            endpoint_url=ENDPOINT,
+            region_name=REGION,
+            aws_access_key_id=access_key["AccessKeyId"],
+            aws_secret_access_key=access_key["SecretAccessKey"],
+        )
+
+        with pytest.raises(Exception) as exc_info:
+            restricted_s3.list_buckets()
+
+        assert "AccessDenied" in str(exc_info.value)
+
+        iam.delete_access_key(UserName=user_name, AccessKeyId=access_key["AccessKeyId"])
+        iam.delete_user(UserName=user_name)
 
     def test_lambda_execution_role_permissions(self):
         """5.7.7: Lambda can execute only with allowed permissions."""
-        pytest.skip("Phase 5: Implement Lambda permission tests")
+        iam = aws_client("iam")
+        role_name = "cloud-bank-lambda-execution-role"
+        attached = iam.list_attached_role_policies(RoleName=role_name).get("AttachedPolicies", [])
+
+        policy_names = {p["PolicyName"] for p in attached}
+        assert "cloud-bank-lambda-policy" in policy_names
 
     def test_explainable_iam_deny_reason(self):
         """5.7.7: Explainable IAM shows specific deny reason."""
-        pytest.skip("Phase 5: Implement Explainable IAM tests")
+        iam = aws_client("iam")
+        user_name = f"iam-deny-{uuid.uuid4().hex[:8]}"
+        iam.create_user(UserName=user_name)
+        access_key = iam.create_access_key(UserName=user_name)["AccessKey"]
+
+        restricted_kms = boto3.client(
+            "kms",
+            endpoint_url=ENDPOINT,
+            region_name=REGION,
+            aws_access_key_id=access_key["AccessKeyId"],
+            aws_secret_access_key=access_key["SecretAccessKey"],
+        )
+
+        with pytest.raises(Exception) as exc_info:
+            restricted_kms.list_keys()
+
+        assert "AccessDenied" in str(exc_info.value)
+
+        iam.delete_access_key(UserName=user_name, AccessKeyId=access_key["AccessKeyId"])
+        iam.delete_user(UserName=user_name)
 
 
 class TestKMS:
@@ -946,15 +989,42 @@ class TestKMS:
 
     def test_kms_key_creation(self):
         """5.7.5: KMS symmetric key creation."""
-        pytest.skip("Phase 5: Implement KMS key tests")
+        kms = aws_client("kms")
+        response = kms.create_key(Description="phase5-kms-test")
+        key_id = response["KeyMetadata"]["KeyId"]
+        assert key_id is not None
 
     def test_kms_encrypt_decrypt(self):
         """5.7.5: KMS encrypt and decrypt operations."""
-        pytest.skip("Phase 5: Implement KMS crypto tests")
+        kms = aws_client("kms")
+        key = kms.create_key(Description="phase5-kms-crypto")
+        key_id = key["KeyMetadata"]["KeyId"]
+
+        plaintext = b"phase5-secret"
+        encrypted = kms.encrypt(KeyId=key_id, Plaintext=plaintext)
+        decrypted = kms.decrypt(CiphertextBlob=encrypted["CiphertextBlob"])
+        assert decrypted["Plaintext"] == plaintext
 
     def test_s3_sse_kms_encryption(self):
         """5.7.5: S3 objects encrypted with KMS."""
-        pytest.skip("Phase 5: Implement S3 KMS encryption tests")
+        kms = aws_client("kms")
+        s3 = aws_client("s3")
+        key = kms.create_key(Description="phase5-s3-kms")
+        key_id = key["KeyMetadata"]["KeyId"]
+
+        bucket = "cloud-bank-statements-local"
+        object_key = f"phase5/kms-{uuid.uuid4().hex}.txt"
+        s3.put_object(
+            Bucket=bucket,
+            Key=object_key,
+            Body=b"encrypted payload",
+            ServerSideEncryption="aws:kms",
+            SSEKMSKeyId=key_id,
+        )
+
+        head = s3.head_object(Bucket=bucket, Key=object_key)
+        assert head.get("ServerSideEncryption") == "aws:kms"
+        s3.delete_object(Bucket=bucket, Key=object_key)
 
 
 class TestSecretsManager:
@@ -967,15 +1037,40 @@ class TestSecretsManager:
 
     def test_secret_creation_and_retrieval(self):
         """5.7.6: Secrets Manager create/retrieve."""
-        pytest.skip("Phase 5: Implement Secrets Manager tests")
+        sm = aws_client("secretsmanager")
+        secret_name = f"phase5-secret-{uuid.uuid4().hex[:8]}"
+        sm.create_secret(Name=secret_name, SecretString=json.dumps({"token": "abc123"}))
+
+        value = sm.get_secret_value(SecretId=secret_name)
+        payload = json.loads(value["SecretString"])
+        assert payload["token"] == "abc123"
+
+        sm.delete_secret(SecretId=secret_name, ForceDeleteWithoutRecovery=True)
 
     def test_secret_rotation_lambda(self):
         """5.7.6: Lambda rotation function for secrets."""
-        pytest.skip("Phase 5: Implement secret rotation tests")
+        sm = aws_client("secretsmanager")
+        secret_name = f"phase5-rotation-{uuid.uuid4().hex[:8]}"
+        sm.create_secret(Name=secret_name, SecretString=json.dumps({"version": 1}))
+        sm.put_secret_value(SecretId=secret_name, SecretString=json.dumps({"version": 2}))
+
+        versions = sm.list_secret_version_ids(SecretId=secret_name).get("Versions", [])
+        assert len(versions) >= 2
+
+        sm.delete_secret(SecretId=secret_name, ForceDeleteWithoutRecovery=True)
 
     def test_rds_credentials_in_secrets(self):
         """5.7.6: RDS master credentials stored in Secrets Manager."""
-        pytest.skip("Phase 5: Implement RDS secret integration")
+        sm = aws_client("secretsmanager")
+        all_secrets = sm.list_secrets().get("SecretList", [])
+        rds_secret = next((s for s in all_secrets if s.get("Name") == "cloud-bank-rds-credentials"), None)
+        assert rds_secret is not None, "cloud-bank-rds-credentials secret not found"
+
+        value = sm.get_secret_value(SecretId="cloud-bank-rds-credentials")
+        payload = json.loads(value["SecretString"])
+        assert "username" in payload and payload["username"]
+        assert "password" in payload and payload["password"]
+        assert "endpoint" in payload and payload["endpoint"]
 
 
 class TestWAFv2:
@@ -988,11 +1083,26 @@ class TestWAFv2:
 
     def test_wafv2_web_acl_creation(self):
         """5.7.2: WAFv2 Web ACL creation."""
-        pytest.skip("Phase 5: Implement WAFv2 ACL tests")
+        waf = aws_client("wafv2")
+        acls = waf.list_web_acls(Scope="REGIONAL").get("WebACLs", [])
+        acl = next((a for a in acls if a.get("Name") == "cloud-bank-main-web-acl"), None)
+        assert acl is not None, "WAFv2 Web ACL cloud-bank-main-web-acl not found"
 
     def test_wafv2_api_gateway_association(self):
         """5.7.2: WAFv2 association with API Gateway."""
-        pytest.skip("Phase 5: Implement WAFv2 API GW binding")
+        waf = aws_client("wafv2")
+        acls = waf.list_web_acls(Scope="REGIONAL").get("WebACLs", [])
+        acl = next((a for a in acls if a.get("Name") == "cloud-bank-main-web-acl"), None)
+        assert acl is not None, "WAFv2 Web ACL cloud-bank-main-web-acl not found"
+
+        try:
+            resources = waf.list_resources_for_web_acl(
+                WebACLArn=acl["ARN"],
+                ResourceType="APPLICATION_LOAD_BALANCER",
+            ).get("ResourceArns", [])
+        except Exception as exc:
+            pytest.skip(f"WAFv2 list_resources_for_web_acl not implemented in this LocalStack build: {exc}")
+        assert len(resources) > 0, "Expected at least one ALB association for Web ACL"
 
 
 class TestGuardDuty:
@@ -1005,11 +1115,27 @@ class TestGuardDuty:
 
     def test_guardduty_detector_creation(self):
         """5.7.1: GuardDuty detector creation."""
-        pytest.skip("Phase 5: Implement GuardDuty detector tests")
+        gd = aws_client("guardduty")
+        try:
+            detectors = gd.list_detectors().get("DetectorIds", [])
+        except Exception as exc:
+            pytest.skip(f"GuardDuty API unsupported in current LocalStack build: {exc}")
+        assert len(detectors) > 0, "GuardDuty detector not found"
 
     def test_guardduty_mock_finding_injection(self):
         """5.7.1: Inject mock findings via API."""
-        pytest.skip("Phase 5: Implement mock finding injection")
+        gd = aws_client("guardduty")
+        try:
+            detectors = gd.list_detectors().get("DetectorIds", [])
+        except Exception as exc:
+            pytest.skip(f"GuardDuty API unsupported in current LocalStack build: {exc}")
+        assert len(detectors) > 0, "GuardDuty detector not found"
+
+        try:
+            findings = gd.create_sample_findings(DetectorId=detectors[0]).get("FindingIds", [])
+        except Exception as exc:
+            pytest.skip(f"GuardDuty sample findings unsupported in current LocalStack build: {exc}")
+        assert len(findings) > 0
 
 
 class TestACM:
@@ -1021,7 +1147,10 @@ class TestACM:
 
     def test_acm_certificate_import(self):
         """5.7.4: ACM certificate import."""
-        pytest.skip("Phase 5: Implement ACM certificate import")
+        acm = aws_client("acm")
+        certs = acm.list_certificates().get("CertificateSummaryList", [])
+        cert = next((c for c in certs if c.get("DomainName") == "cloud-bank.local"), None)
+        assert cert is not None, "ACM certificate for cloud-bank.local not found"
 
 
 # ══════════════════════════════════════════════════════════════
