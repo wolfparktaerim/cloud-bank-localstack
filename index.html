@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>CloudBank Dashboard</title>
+    <style>
+        body { font-family: sans-serif; background: #f0f2f5; padding: 40px; }
+        .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 450px; margin: auto; }
+        h2 { color: #1a73e8; border-bottom: 2px solid #e8f0fe; padding-bottom: 10px; }
+        input, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; }
+        button { background: #34a853; color: white; border: none; cursor: pointer; font-weight: bold; }
+        #output { background: #202124; color: #8ab4f8; padding: 15px; border-radius: 8px; font-family: monospace; font-size: 13px; margin-top: 20px; min-height: 80px; word-wrap: break-word; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>🏦 CloudBank Portal</h2>
+        <input type="text" id="acc" value="USER_01" placeholder="Account ID">
+        <input type="number" id="amt" value="100" placeholder="Amount">
+        <button onclick="send('deposit')">Deposit</button>
+        <button onclick="send('balance')" style="background:#4285f4">Check Balance</button>
+        <div id="output">System ready. Waiting for input...</div>
+    </div>
+
+    <script>
+        async function send(action) {
+            const out = document.getElementById('output');
+            // PASTE THE api_url FROM TERRAFORM OUTPUT HERE
+            const url = "http://localhost:4566/restapis/icmoogofab/prod/_user_request_/transaction";
+            
+            out.innerText = "Processing...";
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: action,
+                        account_id: document.getElementById('acc').value,
+                        amount: parseInt(document.getElementById('amt').value)
+                    })
+                });
+                const data = await response.json();
+                out.innerText = JSON.stringify(data, null, 2);
+            } catch (e) {
+                out.innerText = "Error: " + e.message + "\nCheck console for CORS details.";
+            }
+        }
+    </script>
+</body>
+</html>

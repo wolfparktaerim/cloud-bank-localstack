@@ -1,54 +1,32 @@
-version: "3.8"
+
 
 services:
   localstack:
     image: localstack/localstack:latest
-    container_name: cloud-bank-localstack
     ports:
-      - "4566:4566"       # Main LocalStack endpoint
-      - "4510-4559:4510-4559"  # External services port range
+      - "4566:4566"
+      - "53:53/udp"
     environment:
-      - SERVICES=s3,dynamodb,lambda,sqs,sns,rds,iam,apigateway,cloudwatch,ec2,secretsmanager,ssm
-      - DEFAULT_REGION=ap-southeast-1
-      - AWS_DEFAULT_REGION=ap-southeast-1
-      - LAMBDA_EXECUTOR=docker
+      - LOCALSTACK_AUTH_TOKEN=${LS_AUTH_TOKEN}
+      - DEBUG=${DEBUG}
       - DOCKER_HOST=unix:///var/run/docker.sock
-      - DEBUG=0
-      - DATA_DIR=/var/lib/localstack/data
-      - PERSISTENCE=1   # Persist state between restarts
     volumes:
-      - "./localstack-data:/var/lib/localstack"
+      - "${TMPDIR:-/tmp}/localstack:/var/lib/localstack"
       - "/var/run/docker.sock:/var/run/docker.sock"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 15s
+    networks:
+      - public_net
+      - private_net
 
-  # Mock service for Cognito (not in LocalStack free tier)
-  mock-auth:
-    build: ./services/auth
-    container_name: cloud-bank-mock-auth
-    ports:
-      - "5001:5001"
+  mongodb:
+    image: mongo:latest
+    container_name: private_data_tier
     environment:
-      - PORT=5001
-      - JWT_SECRET=local-dev-secret-change-in-prod
-    depends_on:
-      localstack:
-        condition: service_healthy
-
-  # Mock service for SES email (limited in LocalStack free tier)
-  mock-email:
-    build: ./services/notifications
-    container_name: cloud-bank-mock-email
-    ports:
-      - "5002:5002"
-    environment:
-      - PORT=5002
-      - LOG_EMAILS=true    # Just log emails to console in dev
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASS}
+    networks:
+      - private_net
+    # No ports exposed = Private Data Subnet
 
 networks:
-  default:
-    name: cloud-bank-network
+  public_net:
+  private_net:

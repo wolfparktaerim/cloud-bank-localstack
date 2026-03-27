@@ -1,8 +1,0 @@
-variable "project_name" { type = string }
-variable "environment" { type = string }
-variable "tags" { type = map(string) }
-variable "lambda_runtime" { type = string }
-variable "lambda_role_arn" { type = string }
-variable "transaction_queue" { type = string }
-variable "notification_topic" { type = string }
-variable "db_endpoint" { type = string }

@@ -1,219 +1,29 @@
-# 🏦 Bank SG — Cloud Infrastructure (LocalStack + Terraform)
+# 🏦 AWS 3-Tier Banking Architecture (LocalStack)
 
-> Online Digital Banking Platform — Cloud Engineering & Management Project  
-> Simulated AWS infrastructure for 13,000,000 users in Singapore
+This project simulates a secure, production-grade banking infrastructure using a 3-tier architecture entirely contained within a local environment.
 
----
 
-## 📋 Table of Contents
 
-- [Project Overview](#project-overview)
-- [Team](#team)
-- [Architecture](#architecture)
-- [Prerequisites](#prerequisites)
-- [Quick Start](#quick-start)
-- [Project Structure](#project-structure)
-- [Development Workflow](#development-workflow)
-- [AWS Services](#aws-services)
-- [Python Mock Services](#python-mock-services)
-- [Testing](#testing)
-- [Troubleshooting](#troubleshooting)
+## 🏗️ The Architecture
+1. **Presentation Tier (Public)**: AWS API Gateway serves as the entry point, handling REST requests and CORS pre-flight checks.
+2. **Application Tier (Private Logic)**: Python Lambda function containing the banking logic. It retrieves DB credentials from **AWS Secrets Manager** and processes transactions.
+3. **Data Tier (Isolated)**: 
+   - **MongoDB**: A private container holding account balances. No ports are exposed to the host machine; it is only reachable by the Lambda.
+   - **Amazon S3**: Used as an immutable Audit Log, storing JSON receipts for every transaction.
 
----
+## 🚀 How to Run
 
-## Project Overview
+### 1. Prerequisites
+- Docker & Docker Compose
+- Terraform
+- Python 3.9 (for packaging dependencies)
+- AWS CLI (optional, for manual verification)
 
-This repository simulates a production-grade AWS cloud infrastructure for a Singapore-based online digital bank, built using:
+### 2. Initial Setup
+Clone the project and ensure your `.env` file has the correct LocalStack token.
 
-- **LocalStack** — AWS cloud emulation locally
-- **Terraform** — Infrastructure as Code (IaC)
-- **Python** — Mock services for unsupported LocalStack features
-- **Docker Compose** — Local orchestration
-
----
-
-## Team
-
-| Member   | Responsibility                              |
-| -------- | ------------------------------------------- |
-| Member 1 | Terraform Core — Networking, IAM, Providers |
-| Member 2 | Compute & API — Lambda, ECS, API Gateway    |
-| Member 3 | Data Layer — RDS, DynamoDB, S3              |
-| Member 4 | Messaging — SQS, SNS, EventBridge           |
-| Member 5 | Python Mocks, CI/CD, Tests                  |
-
----
-
-## Architecture
-
-```
-Internet → API Gateway → Lambda Functions → DynamoDB / RDS (PostgreSQL)
-                                         → SQS / SNS (async events)
-                                         → S3 (documents)
-IAM (roles & policies for all services)
-CloudWatch (logs & monitoring)
-Cognito (auth) → Python Mock in LocalStack free tier
-```
-
----
-
-## Prerequisites
-
-Install these before starting:
-
-| Tool           | Version | Install                                          |
-| -------------- | ------- | ------------------------------------------------ |
-| Docker Desktop | Latest  | https://docker.com                               |
-| Terraform      | >= 1.6  | https://terraform.io                             |
-| Python         | >= 3.10 | https://python.org                               |
-| AWS CLI        | >= 2.x  | https://aws.amazon.com/cli/                      |
-| Git            | Latest  | Pre-installed on most systems                    |
-
----
-
-## Quick Start
-
+### 3. Deployment
+Run the automated reset and deploy script:
 ```bash
-# 1. Clone the repo
-git clone https://github.com/wolfparktaerim/cloud-bank-localstack.git
-cd cloud-bank-localstack
-
-# 2. Initialize Terraform
-cd terraform
-terraform init
-terraform apply -var-file="environments/localstack/terraform.tfvars" -auto-approve
-
-# 3. Seed LocalStack with test data
-cd ..
-python scripts/seed_data.py
-
-# 4. Verify everything is running
-./scripts/health_check.sh
-```
-
----
-
-## Project Structure
-
-```
-cloud-bank/
-├── .github/
-│   ├── workflows/              # CI/CD pipelines
-│   └── ISSUE_TEMPLATE/         # Bug report & feature templates
-├── terraform/
-│   ├── modules/                # Reusable Terraform modules (one per service)
-│   ├── environments/
-│   │   ├── localstack/         # Local dev config
-│   │   └── prod-sim/           # Production-like simulation
-│   ├── main.tf
-│   ├── variables.tf
-│   ├── outputs.tf
-│   └── providers.tf
-├── services/                   # Python microservices / mock services
-│   ├── auth/                   # Cognito mock
-│   ├── accounts/
-│   ├── transactions/
-│   ├── notifications/
-│   └── kyc/
-├── scripts/                    # Setup, teardown, seeding scripts
-├── tests/
-│   ├── integration/            # Tests against live LocalStack
-│   └── unit/
-├── docs/
-│   ├── architecture/           # Diagrams
-│   └── adr/                    # Architecture Decision Records
-├── docker-compose.yml
-└── localstack.env
-```
-
----
-
-## Development Workflow
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for full details.
-
-```bash
-# Daily workflow
-git checkout develop
-git pull origin develop
-git checkout -b feature/your-feature-name
-
-# ... make changes ...
-
-git add .
-git commit -m "feat: add DynamoDB accounts table"
-git push origin feature/your-feature-name
-# Open PR → develop on GitHub
-```
-
----
-
-## AWS Services
-
-| Service          | Purpose                     | LocalStack Support |
-| ---------------- | --------------------------- | ------------------ |
-| API Gateway      | REST API entry point        | ✅ Free            |
-| Lambda           | Business logic              | ✅ Free            |
-| DynamoDB         | User sessions, transactions | ✅ Free            |
-| RDS (PostgreSQL) | Core accounts data          | ✅ Free            |
-| S3               | KYC documents, statements   | ✅ Free            |
-| SQS              | Async transaction queue     | ✅ Free            |
-| SNS              | Push notifications          | ✅ Free            |
-| IAM              | Roles & policies            | ✅ Free            |
-| CloudWatch       | Logs & metrics              | ✅ Free            |
-| Cognito          | User auth                   | ⚠️ Python Mock     |
-| SES              | Email notifications         | ⚠️ Python Mock     |
-| WAF              | Security / rate limiting    | ⚠️ Python Mock     |
-
----
-
-## Python Mock Services
-
-Services not supported in LocalStack free tier are mocked in `services/`:
-
-```bash
-# Start all mock services
-cd services
-pip install -r requirements.txt
-python run_mocks.py
-```
-
----
-
-## Testing
-
-```bash
-# Run unit tests
-pytest tests/unit/
-
-# Run integration tests (requires LocalStack running)
-pytest tests/integration/
-
-# Run all tests
-pytest
-```
-
----
-
-## Troubleshooting
-
-**LocalStack not starting?**
-
-```bash
-docker-compose down -v
-docker-compose up -d
-```
-
-**Terraform state issues?**
-
-```bash
-cd terraform
-terraform init -reconfigure
-```
-
-**Port 4566 already in use?**
-
-```bash
-lsof -i :4566
-kill -9 <PID>
-```
+chmod +x reset.sh deploy.sh
+./reset.sh
