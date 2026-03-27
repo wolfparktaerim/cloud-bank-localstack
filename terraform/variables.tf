@@ -81,3 +81,11 @@ variable "notification_topic_name" {
   type        = string
   default     = "cloud-bank-notifications"
 }
+
+# ── Security (Layer 1) ────────────────────────
+variable "jwt_secret" {
+  description = "JWT signing secret for mock auth service"
+  type        = string
+  sensitive   = true
+  default     = "local-dev-jwt-secret-replace-in-prod"
+}

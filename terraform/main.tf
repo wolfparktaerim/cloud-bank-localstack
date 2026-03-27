@@ -1,5 +1,6 @@
 # ─────────────────────────────────────────────
 # main.tf — Root module
+# Wires all modules together in dependency order
 # ─────────────────────────────────────────────
 
 locals {
@@ -9,13 +10,7 @@ locals {
   }
 }
 
-module "networking" {
-  source       = "./modules/networking"
-  project_name = var.project_name
-  environment  = var.environment
-  tags         = local.common_tags
-}
-
+# ── LAYER 1: IAM (needed before security, security needs Lambda role ARN) ──
 module "iam" {
   source       = "./modules/iam"
   project_name = var.project_name
@@ -23,6 +18,30 @@ module "iam" {
   tags         = local.common_tags
 }
 
+# ── LAYER 2a: Networking (needed before security — security needs subnet IDs) ──
+module "networking" {
+  source       = "./modules/networking"
+  project_name = var.project_name
+  environment  = var.environment
+  tags         = local.common_tags
+}
+
+# ── LAYER 1: Security (KMS, Secrets Manager, NACLs) ──
+# Depends on: IAM (lambda_role_arn), Networking (vpc_id, subnet_ids)
+module "security" {
+  source              = "./modules/security"
+  project_name        = var.project_name
+  environment         = var.environment
+  vpc_id              = module.networking.vpc_id
+  private_subnet_ids  = module.networking.private_subnet_ids
+  public_subnet_ids   = module.networking.public_subnet_ids
+  lambda_role_arn     = module.iam.lambda_role_arn
+  db_password         = var.db_password
+  jwt_secret          = var.jwt_secret
+  tags                = local.common_tags
+}
+
+# ── LAYER 3: Storage (S3 — uses KMS key) ──
 module "storage" {
   source                 = "./modules/storage"
   project_name           = var.project_name
@@ -32,6 +51,7 @@ module "storage" {
   tags                   = local.common_tags
 }
 
+# ── LAYER 3: Database (DynamoDB — uses KMS key) ──
 module "database" {
   source       = "./modules/database"
   project_name = var.project_name
@@ -39,6 +59,7 @@ module "database" {
   tags         = local.common_tags
 }
 
+# ── LAYER 4: Messaging (SQS, SNS) ──
 module "messaging" {
   source                  = "./modules/messaging"
   project_name            = var.project_name
@@ -48,6 +69,7 @@ module "messaging" {
   tags                    = local.common_tags
 }
 
+# ── LAYER 5: Compute (Lambda — depends on everything above) ──
 module "compute" {
   source             = "./modules/compute"
   project_name       = var.project_name
@@ -60,6 +82,7 @@ module "compute" {
   tags               = local.common_tags
 }
 
+# ── LAYER 6: API Gateway (depends on Lambda ARNs) ──
 module "api_gateway" {
   source             = "./modules/api_gateway"
   project_name       = var.project_name
@@ -68,6 +91,7 @@ module "api_gateway" {
   tags               = local.common_tags
 }
 
+# ── LAYER 7: Monitoring ──
 module "monitoring" {
   source       = "./modules/monitoring"
   project_name = var.project_name

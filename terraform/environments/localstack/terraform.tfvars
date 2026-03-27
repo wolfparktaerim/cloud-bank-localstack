@@ -21,3 +21,6 @@ statements_bucket_name = "cloud-bank-statements-local"
 # Messaging
 transaction_queue_name  = "cloud-bank-transactions-local"
 notification_topic_name = "cloud-bank-notifications-local"
+
+# Security
+jwt_secret = "local-dev-jwt-secret-replace-in-prod"
