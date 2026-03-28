@@ -25,7 +25,14 @@ def handler(event, context):
             balance = acc.get("balance", 0) if acc else 0
             msg = f"Current balance for {acc_id}: ${balance}"
         else:
-            return {"statusCode": 400, "body": json.dumps({"error": "Invalid action"})}
+            return {
+                "statusCode": 400, 
+                "headers": {
+                    "Access-Control-Allow-Origin": "*",
+                    "Content-Type": "application/json"
+                },
+                "body": json.dumps({"error": "Invalid action"})
+            }
 
         # Audit Log
         audit_id = str(uuid.uuid4())

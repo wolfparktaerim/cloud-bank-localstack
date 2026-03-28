@@ -29,6 +29,8 @@ Run the automated reset and deploy script:
 
 ```bash
 chmod +x reset.sh deploy.sh
-# for windows: ./reset.bat
 ./reset.sh
+
+# for windows: ./deploy.bat ./reset.bat
+
 ```
