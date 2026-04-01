@@ -1,16 +1,62 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <title>CloudBank Dashboard</title>
     <style>
-        body { font-family: sans-serif; background: #f0f2f5; padding: 40px; }
-        .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 450px; margin: auto; }
-        h2 { color: #1a73e8; border-bottom: 2px solid #e8f0fe; padding-bottom: 10px; }
-        input, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; }
-        button { background: #34a853; color: white; border: none; cursor: pointer; font-weight: bold; }
-        #output { background: #202124; color: #8ab4f8; padding: 15px; border-radius: 8px; font-family: monospace; font-size: 13px; margin-top: 20px; min-height: 80px; word-wrap: break-word; }
+        body {
+            font-family: sans-serif;
+            background: #f0f2f5;
+            padding: 40px;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 450px;
+            margin: auto;
+        }
+
+        h2 {
+            color: #1a73e8;
+            border-bottom: 2px solid #e8f0fe;
+            padding-bottom: 10px;
+        }
+
+        input,
+        button {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            box-sizing: border-box;
+        }
+
+        button {
+            background: #34a853;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        #output {
+            background: #202124;
+            color: #8ab4f8;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 13px;
+            margin-top: 20px;
+            min-height: 80px;
+            word-wrap: break-word;
+        }
     </style>
 </head>
+
 <body>
     <div class="card">
         <h2>🏦 CloudBank Portal</h2>
@@ -25,8 +71,8 @@
         async function send(action) {
             const out = document.getElementById('output');
             // PASTE THE api_url FROM TERRAFORM OUTPUT HERE
-            const url = "http://localhost:4566/restapis/icmoogofab/prod/_user_request_/transaction";
-            
+            const url = "http://localhost:4566/restapis/ipi1hz4vqy/prod/_user_request_/transaction";
+
             out.innerText = "Processing...";
             try {
                 const response = await fetch(url, {
@@ -46,4 +92,5 @@
         }
     </script>
 </body>
+
 </html>

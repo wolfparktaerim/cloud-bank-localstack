@@ -1,0 +1,1 @@
+/usr/lib/postgresql/13/bin/postgres "-p" "37721" "-D" "/var/lib/localstack/tmp/rds/postgres/000000000000/instance/000000000000/us-east-1/terraform-20260328110946831900000002/data" "-k" "/tmp/tmpr4lz9p15" "-h" "0.0.0.0" "-F" "-c" "logging_collector=off"

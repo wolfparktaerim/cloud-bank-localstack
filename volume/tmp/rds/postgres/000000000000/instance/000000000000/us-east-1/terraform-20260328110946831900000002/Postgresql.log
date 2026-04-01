@@ -1,0 +1,6 @@
+2026-03-28 11:11:24.906 UTC [4373] LOG:  starting PostgreSQL 13.23 (Debian 13.23-1.pgdg13+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit
+2026-03-28 11:11:24.907 UTC [4373] LOG:  listening on IPv4 address "0.0.0.0", port 37721
+2026-03-28 11:11:24.916 UTC [4373] LOG:  listening on Unix socket "/tmp/tmpr4lz9p15/.s.PGSQL.37721"
+2026-03-28 11:11:24.988 UTC [4374] LOG:  database system was shut down at 2026-03-28 11:11:16 UTC
+2026-03-28 11:11:24.994 UTC [4375] FATAL:  the database system is starting up
+2026-03-28 11:11:25.094 UTC [4373] LOG:  database system is ready to accept connections

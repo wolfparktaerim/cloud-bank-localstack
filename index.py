@@ -1,57 +1,53 @@
 import boto3, json, os, uuid
-from pymongo import MongoClient
 from datetime import datetime
 
-def handler(event, context):
-    try:
-        s3 = boto3.client('s3', endpoint_url="http://localstack:4566")
-        sm = boto3.client('secretsmanager', endpoint_url="http://localstack:4566")
-        
-        res = sm.get_secret_value(SecretId='db/mongo')
-        creds = json.loads(res['SecretString'])
-        client = MongoClient(f"mongodb://{creds['username']}:{creds['password']}@{creds['host']}:27017")
-        db = client.bank_db
+# Initialize clients (LocalStack endpoints)
+endpoint = "http://localstack:4566"
+dynamodb = boto3.client('dynamodb', endpoint_url=endpoint)
+sns = boto3.client('sns', endpoint_url=endpoint)
+sqs = boto3.client('sqs', endpoint_url=endpoint)
+cw_logs = boto3.client('logs', endpoint_url=endpoint)
 
+def handler(event, context):
+    print("X-Ray Trace ID:", context.aws_request_id) # Mock tracing
+    
+    try:
         body = json.loads(event.get("body", "{}"))
         action = body.get("action")
         acc_id = body.get("account_id", "GUEST")
         amount = body.get("amount", 0)
-
-        if action == "deposit":
-            db.accounts.update_one({"id": acc_id}, {"$inc": {"balance": amount}}, upsert=True)
-            msg = f"Deposited ${amount} into {acc_id}"
-        elif action == "balance":
-            acc = db.accounts.find_one({"id": acc_id})
-            balance = acc.get("balance", 0) if acc else 0
-            msg = f"Current balance for {acc_id}: ${balance}"
-        else:
-            return {
-                "statusCode": 400, 
-                "headers": {
-                    "Access-Control-Allow-Origin": "*",
-                    "Content-Type": "application/json"
-                },
-                "body": json.dumps({"error": "Invalid action"})
+        
+        tx_id = str(uuid.uuid4())
+        
+        # 1. Mock RDS Interaction (Core Ledger)
+        msg = f"Processed {action} of ${amount} for {acc_id} via RDS Ledger."
+        
+        # 2. Write to DynamoDB (Audit/History)
+        dynamodb.put_item(
+            TableName='BankTransactions',
+            Item={
+                'transaction_id': {'S': tx_id},
+                'account': {'S': acc_id},
+                'amount': {'N': str(amount)},
+                'timestamp': {'S': datetime.now().isoformat()}
             }
+        )
 
-        # Audit Log
-        audit_id = str(uuid.uuid4())
-        audit_data = {"id": audit_id, "acc": acc_id, "action": action, "amt": amount, "ts": datetime.now().isoformat()}
-        s3.put_object(Bucket=os.environ['AUDIT_BUCKET'], Key=f"logs/{acc_id}/{audit_id}.json", Body=json.dumps(audit_data))
+        # 3. SNS Pub/Sub for Large Transactions (Event-Driven)
+        if amount > 10000:
+            sns.publish(
+                TopicArn="arn:aws:sns:us-east-1:000000000000:high-value-transactions",
+                Message=json.dumps({"tx_id": tx_id, "acc": acc_id, "amount": amount, "flag": "REVIEW"})
+            )
 
         return {
             "statusCode": 200,
             "headers": {
                 "Content-Type": "application/json",
-                "Access-Control-Allow-Origin": "*", # Allows browser 'null' origins
-                "Access-Control-Allow-Methods": "POST,OPTIONS",
-                "Access-Control-Allow-Headers": "Content-Type"
+                "Access-Control-Allow-Origin": "*"
             },
-            "body": json.dumps({"message": msg, "audit_status": "Recorded"})
+            "body": json.dumps({"message": msg, "transaction_id": tx_id})
         }
+        
     except Exception as e:
-        return {
-            "statusCode": 500, 
-            "headers": {"Access-Control-Allow-Origin": "*"},
-            "body": json.dumps({"error": str(e)})
-        }
+        return {"statusCode": 500, "body": json.dumps({"error": str(e)})}
