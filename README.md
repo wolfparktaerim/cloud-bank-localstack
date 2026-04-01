@@ -52,7 +52,7 @@ Once complete, open `index.html` directly in a browser.
 After `./reset.sh` finishes you should see output like:
 
 ```
-api_base_url = "http://localhost:4566/restapis/abc12345/prod/_user_request_"
+api_base_url = "http://localhost:4566/_aws/execute-api/abc12345/prod"
 cognito_user_pool_id  = "ap-southeast-1_xxxxxxxx"
 cognito_client_id     = "xxxxxxxxxxxxxxxxxxxxxxxxxx"
 ```

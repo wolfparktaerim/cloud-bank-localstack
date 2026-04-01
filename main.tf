@@ -1237,12 +1237,13 @@ resource "aws_api_gateway_method" "options" {
 }
 
 resource "aws_api_gateway_integration" "options" {
-  for_each          = local.api_routes
-  rest_api_id       = aws_api_gateway_rest_api.api.id
-  resource_id       = aws_api_gateway_resource.route[each.key].id
-  http_method       = aws_api_gateway_method.options[each.key].http_method
-  type              = "MOCK"
-  request_templates = { "application/json" = "{\"statusCode\": 200}" }
+  for_each             = local.api_routes
+  rest_api_id          = aws_api_gateway_rest_api.api.id
+  resource_id          = aws_api_gateway_resource.route[each.key].id
+  http_method          = aws_api_gateway_method.options[each.key].http_method
+  type                 = "MOCK"
+  passthrough_behavior = "WHEN_NO_MATCH"
+  request_templates    = { "application/json" = "{\"statusCode\": 200}" }
 }
 
 resource "aws_api_gateway_method_response" "options_200" {
@@ -1320,7 +1321,7 @@ resource "aws_api_gateway_stage" "prod" {
 # ══════════════════════════════════════════════════════════════════════════════
 
 locals {
-  api_base = "http://localhost:4566/restapis/${aws_api_gateway_rest_api.api.id}/prod/_user_request_"
+  api_base = "http://localhost:4566/_aws/execute-api/${aws_api_gateway_rest_api.api.id}/prod"
 }
 
 output "api_base_url" { value = local.api_base }
