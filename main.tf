@@ -998,6 +998,17 @@ resource "aws_acm_certificate" "bank" {
 # 5.8  RELIABILITY
 # ══════════════════════════════════════════════════════════════════════════════
 
+# ─── SES EMAIL VERIFICATION ──────────────────────────────────────────────────
+# LocalStack requires sender (and in sandbox mode, recipient) addresses to be
+# verified before SendEmail succeeds.
+resource "aws_ses_email_identity" "sender" {
+  email = "noreply@cloudbank.internal"
+}
+
+resource "aws_ses_email_identity" "test_recipient" {
+  email = "admin@cloudbank.com"
+}
+
 # ─── 5.8.2  SNS TOPICS ───────────────────────────────────────────────────────
 resource "aws_sns_topic" "alerts" {
   name              = "bank-alerts"

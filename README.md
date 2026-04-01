@@ -277,6 +277,8 @@ Click **Publish to SNS**. Expected:
 
 #### 5b. Send email (SES)
 
+> LocalStack SES runs in sandbox mode — both sender and recipient must be verified. Terraform provisions `noreply@cloudbank.internal` (sender) and `admin@cloudbank.com` (test recipient) via `aws_ses_email_identity`. Use only these addresses when testing locally.
+
 | Field | Value |
 |-------|-------|
 | To | `admin@cloudbank.com` |
