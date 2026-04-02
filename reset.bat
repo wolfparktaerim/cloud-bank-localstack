@@ -23,6 +23,7 @@ if exist "lambda_accounts.zip"          del /f /q "lambda_accounts.zip"
 if exist "lambda_transactions.zip"      del /f /q "lambda_transactions.zip"
 if exist "lambda_notifications.zip"     del /f /q "lambda_notifications.zip"
 if exist "lambda_kyc.zip"               del /f /q "lambda_kyc.zip"
+if exist "lambda_dlq.zip"               del /f /q "lambda_dlq.zip"
 if exist "lambda.zip"                   del /f /q "lambda.zip"
 
 REM 4. Reset containers
@@ -59,6 +60,7 @@ CALL :package_lambda accounts     false
 CALL :package_lambda transactions true
 CALL :package_lambda notifications false
 CALL :package_lambda kyc          false
+CALL :package_lambda dlq          false
 
 REM ─────────────────────────────────────────────────────────────────────────────
 REM 6. Deploy infrastructure

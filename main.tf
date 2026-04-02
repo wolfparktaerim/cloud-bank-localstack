@@ -614,6 +614,7 @@ resource "aws_iam_role_policy" "transactions_policy" {
       { Effect = "Allow", Action = ["secretsmanager:GetSecretValue"], Resource = aws_secretsmanager_secret.db_mongo.arn },
       { Effect = "Allow", Action = ["s3:PutObject", "s3:GetObject"], Resource = "${aws_s3_bucket.audit_logs.arn}/*" },
       { Effect = "Allow", Action = ["sqs:SendMessage"], Resource = aws_sqs_queue.bank_dlq.arn },
+      { Effect = "Allow", Action = ["sqs:ReceiveMessage", "sqs:DeleteMessage", "sqs:GetQueueAttributes"], Resource = aws_sqs_queue.transaction_queue.arn },
       { Effect = "Allow", Action = ["sns:Publish"], Resource = aws_sns_topic.transaction_events.arn },
       { Effect = "Allow", Action = ["dynamodb:PutItem", "dynamodb:GetItem", "dynamodb:Query"], Resource = aws_dynamodb_table.audit_events.arn },
       { Effect = "Allow", Action = ["kms:Decrypt", "kms:GenerateDataKey"], Resource = aws_kms_key.bank.arn }
@@ -742,6 +743,76 @@ resource "aws_cloudwatch_log_group" "kyc" {
   name              = "/aws/lambda/${aws_lambda_function.kyc.function_name}"
   retention_in_days = 30
   kms_key_id        = aws_kms_key.bank.arn
+}
+
+# ── DLQ MANAGEMENT LAMBDA ──────────────────────────────────────────────────────
+resource "aws_iam_role" "lambda_dlq" {
+  name               = "bank-lambda-dlq-role"
+  assume_role_policy = data.aws_iam_policy_document.lambda_assume.json
+}
+resource "aws_iam_role_policy_attachment" "dlq_base" {
+  role       = aws_iam_role.lambda_dlq.name
+  policy_arn = aws_iam_policy.lambda_base.arn
+}
+resource "aws_iam_role_policy" "dlq_policy" {
+  name = "dlq-service-policy"
+  role = aws_iam_role.lambda_dlq.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "sqs:ReceiveMessage",
+          "sqs:DeleteMessage",
+          "sqs:SendMessage",
+          "sqs:GetQueueAttributes",
+          "sqs:PurgeQueue",
+          "sqs:GetQueueUrl"
+        ]
+        Resource = [
+          aws_sqs_queue.bank_dlq.arn,
+          aws_sqs_queue.transaction_queue.arn
+        ]
+      },
+      { Effect = "Allow", Action = ["kms:Decrypt", "kms:GenerateDataKey"], Resource = aws_kms_key.bank.arn }
+    ]
+  })
+}
+resource "aws_lambda_function" "dlq" {
+  function_name = "lambda_dlq"
+  filename      = "lambda_dlq.zip"
+  handler       = "dlq.handler"
+  runtime       = "python3.9"
+  role          = aws_iam_role.lambda_dlq.arn
+  timeout       = 30
+  tracing_config { mode = "Active" }
+  vpc_config {
+    subnet_ids         = local.lambda_vpc.subnet_ids
+    security_group_ids = local.lambda_vpc.security_group_ids
+  }
+  environment {
+    variables = {
+      LOCALSTACK_ENDPOINT = "http://localstack:4566"
+      DLQ_URL             = aws_sqs_queue.bank_dlq.url
+      QUEUE_URL           = aws_sqs_queue.transaction_queue.url
+      AWS_DEFAULT_REGION  = "ap-southeast-1"
+    }
+  }
+}
+resource "aws_cloudwatch_log_group" "dlq" {
+  name              = "/aws/lambda/${aws_lambda_function.dlq.function_name}"
+  retention_in_days = 30
+  kms_key_id        = aws_kms_key.bank.arn
+}
+
+# ── SQS EVENT SOURCE — Transaction Queue → Transactions Lambda ────────────────
+resource "aws_lambda_event_source_mapping" "sqs_to_transactions" {
+  event_source_arn                   = aws_sqs_queue.transaction_queue.arn
+  function_name                      = aws_lambda_function.transactions.arn
+  batch_size                         = 1
+  enabled                            = true
+  function_response_types            = ["ReportBatchItemFailures"]
 }
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1208,6 +1279,7 @@ locals {
     transactions  = aws_lambda_function.transactions.invoke_arn
     notifications = aws_lambda_function.notifications.invoke_arn
     kyc           = aws_lambda_function.kyc.invoke_arn
+    dlq           = aws_lambda_function.dlq.invoke_arn
   }
 }
 
@@ -1292,6 +1364,7 @@ resource "aws_lambda_permission" "apigw" {
     transactions  = aws_lambda_function.transactions.function_name
     notifications = aws_lambda_function.notifications.function_name
     kyc           = aws_lambda_function.kyc.function_name
+    dlq           = aws_lambda_function.dlq.function_name
   }
   statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"
@@ -1341,6 +1414,7 @@ output "api_accounts_url" { value = "${local.api_base}/accounts" }
 output "api_transactions_url" { value = "${local.api_base}/transactions" }
 output "api_notifications_url" { value = "${local.api_base}/notifications" }
 output "api_kyc_url" { value = "${local.api_base}/kyc" }
+output "api_dlq_url" { value = "${local.api_base}/dlq" }
 output "cognito_user_pool_id" { value = aws_cognito_user_pool.bank.id }
 output "cognito_client_id" { value = aws_cognito_user_pool_client.app.id }
 output "rds_endpoint" { value = aws_db_instance.postgres.endpoint }

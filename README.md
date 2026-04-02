@@ -355,20 +355,44 @@ aws --endpoint-url=http://localhost:4566 elasticache describe-cache-clusters \
 
 ### Step 7 — Dead Letter Queue test
 
-Force a Lambda failure by sending a malformed request, then confirm the message lands in the DLQ.
+Trigger a transaction failure that will automatically send the message to the DLQ after 3 retry attempts:
+
+**Option A: Quick Test (uses test message injection)**
 
 ```bash
-# Send a bad request to the transactions endpoint
-API_URL=$(terraform output -raw api_transactions_url)
-curl -s -X POST "$API_URL" \
-  -H "Content-Type: application/json" \
-  -d '{"action": "deposit", "account_id": null, "amount": "not-a-number"}'
+export API_BASE=$(grep 'apiBase:' config.js | awk -F'"' '{print $2}')
+export API_DLQ="$API_BASE/dlq"
 
-# Check DLQ depth
-aws --endpoint-url=http://localhost:4566 sqs get-queue-attributes \
-  --queue-url http://localhost:4566/000000000000/bank-transaction-dlq \
-  --attribute-names ApproximateNumberOfMessages \
-  --region ap-southeast-1
+# Send test message to DLQ
+curl -X POST "$API_DLQ" -H "Content-Type: application/json" \
+  -d '{"action":"send_test","account_id":"TEST_DLQ","amount":500}' | jq
+
+# View DLQ stats
+curl -X POST "$API_DLQ" -H "Content-Type: application/json" \
+  -d '{"action":"stats"}' | jq
+
+# Peek at messages
+curl -X POST "$API_DLQ" -H "Content-Type: application/json" \
+  -d '{"action":"peek"}' | jq
+
+# Redrive back to main queue
+curl -X POST "$API_DLQ" -H "Content-Type: application/json" \
+  -d '{"action":"redrive"}' | jq
+```
+
+**Option B: Real Failure Test (triggers actual Lambda retries → DLQ)**
+
+Run the automated test script:
+```bash
+./test_dlq_real_failure.sh
+```
+
+Windows / PowerShell (no Bash required):
+```powershell
+./test_dlq_real_failure.ps1
+```
+
+This publishes a malformed transaction to SNS that will fail Lambda processing 3 times, then automatically move to the DLQ.
 ```
 
 ---

@@ -41,7 +41,107 @@ def _audit(s3, dynamo_table, acc_id, action, amount, status="SUCCESS"):
     })
     return audit_id
 
+def _process_transaction(body, db, s3, table, sns, skip_sns=False):
+    """Core transaction logic shared by both API Gateway and SQS invocations.
+    Returns (statusCode, response_body_dict).
+    Set skip_sns=True when called from SQS to avoid infinite SNS→SQS→Lambda loops.
+    """
+    action = body.get("action")
+    acc_id = body.get("account_id", "GUEST")
+    amount = float(body.get("amount", 0))
+
+    # Messages emitted by this Lambda to SNS are for notifications only.
+    # If they re-enter through SNS->SQS, skip to avoid applying transactions twice.
+    if body.get("notification_only") is True:
+        return 200, {"message": "Notification-only event ignored"}
+
+    if action == "deposit":
+        db.accounts.update_one({"id": acc_id}, {"$inc": {"balance": amount}}, upsert=True)
+        bal = db.accounts.find_one({"id": acc_id}).get("balance", 0)
+        msg = f"Deposited ${amount:.2f} into {acc_id}"
+        extra = {"balance": round(float(bal), 2)}
+
+    elif action == "withdraw":
+        acc = db.accounts.find_one({"id": acc_id})
+        if not acc or acc.get("balance", 0) < amount:
+            return 400, {"error": "Insufficient funds"}
+        db.accounts.update_one({"id": acc_id}, {"$inc": {"balance": -amount}})
+        bal = db.accounts.find_one({"id": acc_id}).get("balance", 0)
+        msg = f"Withdrew ${amount:.2f} from {acc_id}"
+        extra = {"balance": round(float(bal), 2)}
+
+    elif action == "transfer":
+        to_acc = body.get("to_account_id", "")
+        if not to_acc:
+            return 400, {"error": "Missing to_account_id for transfer"}
+        if to_acc == acc_id:
+            return 400, {"error": "Cannot transfer to the same account"}
+        acc    = db.accounts.find_one({"id": acc_id})
+        if not acc or acc.get("balance", 0) < amount:
+            return 400, {"error": "Insufficient funds"}
+        db.accounts.update_one({"id": acc_id}, {"$inc": {"balance": -amount}})
+        db.accounts.update_one({"id": to_acc}, {"$inc": {"balance":  amount}}, upsert=True)
+        from_bal = db.accounts.find_one({"id": acc_id}).get("balance", 0)
+        to_bal = db.accounts.find_one({"id": to_acc}).get("balance", 0)
+        msg = f"Transferred ${amount:.2f} from {acc_id} to {to_acc}"
+        extra = {
+            "from_balance": round(float(from_bal), 2),
+            "to_balance": round(float(to_bal), 2),
+            "to_account_id": to_acc,
+        }
+
+    elif action == "balance":
+        acc     = db.accounts.find_one({"id": acc_id})
+        balance = acc.get("balance", 0) if acc else 0
+        msg     = f"Balance for {acc_id}: ${balance:.2f}"
+        aid     = _audit(s3, table, acc_id, action, 0)
+        return 200, {"message": msg, "audit_id": aid}
+
+    else:
+        return 400, {"error": "Invalid action. Use: deposit | withdraw | transfer | balance"}
+
+    audit_id = _audit(s3, table, acc_id, action, amount)
+
+    if NOTIFICATION_TOPIC and not skip_sns:
+        try:
+            sns.publish(
+                TopicArn=NOTIFICATION_TOPIC,
+                Message=json.dumps({
+                    "account_id": acc_id,
+                    "action": action,
+                    "amount": amount,
+                    "notification_only": True,
+                }),
+                Subject=f"Bank Transaction: {action.upper()}",
+            )
+        except Exception:
+            pass  # Non-critical — don't fail the transaction
+
+    return 200, {"message": msg, "audit_id": audit_id, "audit_status": "Recorded", **extra}
+
+
+def _parse_sqs_body(record_body):
+    """Parse an SQS record body. If the message was
+forwarded from SNS,
+    unwrap the SNS envelope to get the inner Message payload."""
+    parsed = json.loads(record_body)
+    # SNS → SQS wraps the real payload inside a "Message" key
+    if "Message" in parsed and "TopicArn" in parsed:
+        return json.loads(parsed["Message"])
+    return parsed
+
+
+def _parse_api_body(event):
+    raw = event.get("body") if isinstance(event, dict) else None
+    if raw is None:
+        return {}
+    if isinstance(raw, dict):
+        return raw
+    return json.loads(raw)
+
+
 def handler(event, context):
+    is_sqs = isinstance(event, dict) and "Records" in event
     try:
         s3     = boto3.client("s3",  endpoint_url=ENDPOINT, region_name=REGION)
         sns    = boto3.client("sns", endpoint_url=ENDPOINT, region_name=REGION)
@@ -49,60 +149,34 @@ def handler(event, context):
         table  = dynamo.Table(TRANSACTION_TABLE)
         db     = _mongo()
 
-        body   = json.loads(event.get("body") or "{}")
-        action = body.get("action")
-        acc_id = body.get("account_id", "GUEST")
-        amount = float(body.get("amount", 0))
+        # ── SQS event source (batch of records from bank-transaction-queue) ──
+        if is_sqs:
+            failures = []
+            for record in event["Records"]:
+                try:
+                    body = _parse_sqs_body(record["body"])
+                    code, _ = _process_transaction(body, db, s3, table, sns, skip_sns=True)
+                    if code >= 400:
+                        # Report non-2xx business errors as failures for retry/DLQ testing.
+                        failures.append({"itemIdentifier": record["messageId"]})
+                except Exception:
+                    failures.append({"itemIdentifier": record["messageId"]})
+            # Return partial batch failure response
+            return {"batchItemFailures": failures}
 
-        if action == "deposit":
-            db.accounts.update_one({"id": acc_id}, {"$inc": {"balance": amount}}, upsert=True)
-            msg = f"Deposited ${amount:.2f} into {acc_id}"
-
-        elif action == "withdraw":
-            acc = db.accounts.find_one({"id": acc_id})
-            if not acc or acc.get("balance", 0) < amount:
-                return {"statusCode": 400, "headers": _headers(), "body": json.dumps({"error": "Insufficient funds"})}
-            db.accounts.update_one({"id": acc_id}, {"$inc": {"balance": -amount}})
-            msg = f"Withdrew ${amount:.2f} from {acc_id}"
-
-        elif action == "transfer":
-            to_acc = body.get("to_account_id", "")
-            acc    = db.accounts.find_one({"id": acc_id})
-            if not acc or acc.get("balance", 0) < amount:
-                return {"statusCode": 400, "headers": _headers(), "body": json.dumps({"error": "Insufficient funds"})}
-            db.accounts.update_one({"id": acc_id}, {"$inc": {"balance": -amount}})
-            db.accounts.update_one({"id": to_acc}, {"$inc": {"balance":  amount}}, upsert=True)
-            msg = f"Transferred ${amount:.2f} from {acc_id} to {to_acc}"
-
-        elif action == "balance":
-            acc     = db.accounts.find_one({"id": acc_id})
-            balance = acc.get("balance", 0) if acc else 0
-            msg     = f"Balance for {acc_id}: ${balance:.2f}"
-            aid     = _audit(s3, table, acc_id, action, 0)
-            return {"statusCode": 200, "headers": _headers(), "body": json.dumps({"message": msg, "audit_id": aid})}
-
-        else:
-            return {"statusCode": 400, "headers": _headers(), "body": json.dumps({"error": "Invalid action. Use: deposit | withdraw | transfer | balance"})}
-
-        audit_id = _audit(s3, table, acc_id, action, amount)
-
-        if NOTIFICATION_TOPIC:
-            try:
-                sns.publish(
-                    TopicArn=NOTIFICATION_TOPIC,
-                    Message=json.dumps({"account_id": acc_id, "action": action, "amount": amount}),
-                    Subject=f"Bank Transaction: {action.upper()}",
-                )
-            except Exception:
-                pass  # Non-critical — don't fail the transaction
-
+        # ── API Gateway / direct invocation ──────────────────────────────────
+        body = _parse_api_body(event)
+        code, result = _process_transaction(body, db, s3, table, sns)
         return {
-            "statusCode": 200,
+            "statusCode": code,
             "headers": _headers(),
-            "body": json.dumps({"message": msg, "audit_id": audit_id, "audit_status": "Recorded"}),
+            "body": json.dumps(result),
         }
 
     except Exception as e:
+        if is_sqs:
+            # For SQS invocations, raise so Lambda marks the batch failed.
+            raise
         return {
             "statusCode": 500,
             "headers": {"Access-Control-Allow-Origin": "*"},
