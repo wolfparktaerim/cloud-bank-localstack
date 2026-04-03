@@ -398,6 +398,134 @@ This publishes a malformed transaction to SNS that will fail Lambda processing 3
 
 ---
 
+## Load Testing
+
+Three scripts live in [load-test/](load-test/). Pick whichever tool you have installed.
+
+### Install
+
+```bash
+# k6 (recommended)
+brew install k6          # macOS
+choco install k6         # Windows
+
+# Locust (Python alternative — no extra install if you already have pip)
+pip install locust
+```
+
+---
+
+### k6 — full user journey (`k6.js`)
+
+Runs every microservice in a realistic sequence per VU:
+`register → login → create accounts → deposit → withdraw → transfer → KYC → notify → DLQ stats`
+
+```bash
+# Against API Gateway
+k6 run --env API_BASE=$(terraform output -raw api_base_url) load-test/k6.js
+
+# Against the ALB
+k6 run --env API_BASE=$(terraform output -raw alb_base_url) load-test/k6.js
+
+# Higher load
+k6 run --env API_BASE=$(terraform output -raw api_base_url) \
+       --vus 20 --duration 2m load-test/k6.js
+
+# Save raw results for further analysis
+k6 run --env API_BASE=$(terraform output -raw api_base_url) \
+       --out json=load-test/results.json load-test/k6.js
+```
+
+Default profile: ramp 0→5 VUs (20s) → hold 10 VUs (1m) → spike 20 VUs (20s) → ramp down.
+
+**Thresholds** (test fails if breached):
+
+| Metric | Threshold |
+|--------|-----------|
+| Overall p95 latency | < 3 000 ms |
+| Per-service p95 latency | < 1 500 – 3 000 ms |
+| HTTP failure rate | < 10% |
+| Application error rate | < 10% |
+
+A custom summary is printed at the end and saved to `load-test/summary.txt`.
+
+---
+
+### k6 — API Gateway vs ALB comparison (`k6-compare.js`)
+
+Runs the same deposit/withdraw workload against both endpoints **simultaneously** using k6 scenarios, then prints a side-by-side latency table.
+
+```bash
+k6 run \
+  --env API_BASE=$(terraform output -raw api_base_url) \
+  --env ALB_BASE=$(terraform output -raw alb_base_url) \
+  load-test/k6-compare.js
+```
+
+Output:
+```
+╔══════════════════════════════════════════════════════════════════╗
+║         CLOUD BANK — API GATEWAY vs ALB COMPARISON              ║
+╠══════════════════════════════════════════════════════════════════╣
+║                    API Gateway          ALB                      ║
+╠══════════════════════════════════════════════════════════════════╣
+║  p50 latency    142ms            138ms                           ║
+║  p95 latency    310ms            298ms                           ║
+...
+```
+
+---
+
+### Locust — Python web UI (`locust.py`)
+
+Locust runs a weighted task mix (deposits/balance checks most frequent, KYC/DLQ least frequent) and provides a live web dashboard.
+
+**Headless (CI-friendly):**
+```bash
+locust -f load-test/locust.py --headless \
+       --users 10 --spawn-rate 2 --run-time 2m \
+       --host $(terraform output -raw api_base_url)
+```
+
+**With live web UI — open `http://localhost:8089`:**
+```bash
+locust -f load-test/locust.py \
+       --host $(terraform output -raw api_base_url)
+```
+
+Against the ALB:
+```bash
+locust -f load-test/locust.py \
+       --host $(terraform output -raw alb_base_url)
+```
+
+**Task weights** (higher = more frequent):
+
+| Task | Weight | Why |
+|------|--------|-----|
+| deposit | 3 | most common banking action |
+| balance | 3 | read-heavy workload |
+| withdraw | 2 | less frequent than deposit |
+| transfer | 2 | inter-account |
+| get/list accounts | 1 | metadata reads |
+| KYC submit/check | 1 | infrequent lifecycle event |
+| send alert | 1 | operational |
+| DLQ stats | 1 | monitoring |
+
+---
+
+### What to expect on LocalStack
+
+| Consideration | Detail |
+|---------------|--------|
+| **All load hits one machine** | Docker + LocalStack + MongoDB all share your CPU/RAM — you're benchmarking your laptop, not a distributed system |
+| **Bottleneck** | MongoDB container for `/transactions` — it processes all deposits, withdrawals, and transfers sequentially |
+| **Lambda "cold starts"** | LocalStack simulates them but they're much faster than real AWS |
+| **Realistic numbers** | p95 of 200–800ms is typical locally; real AWS would be 50–200ms for warmed Lambdas |
+| **Error handling** | Insufficient-funds responses (400) are expected under load — the scripts treat them as non-failures |
+
+---
+
 ## Load Balancer (ALB)
 
 ### Architecture
