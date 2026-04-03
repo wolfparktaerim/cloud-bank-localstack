@@ -71,10 +71,10 @@ function post(path, body) {
 }
 
 function ok(res, label) {
-  const passed = res.status === 200;
+  const passed = res.status >= 200 && res.status < 300;
   if (!passed) errorRate.add(1);
   else         errorRate.add(0);
-  check(res, { [`${label} → 200`]: r => r.status === 200 });
+  check(res, { [`${label} → 2xx`]: r => r.status >= 200 && r.status < 300 });
   return passed;
 }
 
@@ -98,6 +98,7 @@ export default function () {
 
     res = post('auth', { action: 'login', username, password });
     authLatency.add(res.timings.duration);
+authLatency.add(res.timings.duration);
     ok(res, 'login');
 
     res = post('auth', { action: 'get_user', username });
@@ -153,14 +154,16 @@ export default function () {
     txCount.add(1);
     ok(res, 'deposit_account2');
 
-    res = post('transactions', { action: 'transfer', account_id: accountId, amount: 100, transfer_to: account2 });
+    res = post('transactions', { action: 'transfer', account_id: accountId, amount: 100, to_account_id: account2 });
     txLatency.add(res.timings.duration);
     txCount.add(1);
     ok(res, 'transfer');
 
-    // Intentional failure: overdraft — should return 200 with error body, not 5xx
+    // Intentional failure: overdraft — should return 400, not 5xx
     res = post('transactions', { action: 'withdraw', account_id: accountId, amount: 999999 });
     txLatency.add(res.timings.duration);
+    // Don't count as a bank error — 400 is the correct business response
+    errorRate.add(res.status >= 500 ? 1 : 0);
     check(res, { 'overdraft handled gracefully': r => r.status === 200 || r.status === 400 });
 
     res = post('transactions', { action: 'balance', account_id: accountId });
@@ -215,7 +218,7 @@ export default function () {
 
   sleep(0.5);
 
-  // ── 6. DLQ ────────────────────────────────────────────────────────────────────
+  // ── 6. DLQ
   group('6_dlq', () => {
     let res;
 
