@@ -268,6 +268,19 @@ Then paste the printed URL (without quotes) into the
 API Base URL field at the top of the page and click Save.</div>
       </div>
       <div class="card">
+        <p class="card-title">Application Load Balancer (ALB)</p>
+        <div class="output neutral-out" id="alb-url-display">ALB URL loads from config.js after deployment…</div>
+        <br>
+        <div class="btn-row">
+          <button class="btn neutral" onclick="useAlbBase()">Switch API Base to ALB</button>
+          <button class="btn neutral" onclick="useApiGwBase()">Switch API Base to API Gateway</button>
+        </div>
+        <p style="color:#8b949e;font-size:0.85em;margin-top:8px">
+          The ALB routes the same requests via path-based rules across both AZs.<br>
+          Test with: <code>terraform output alb_base_url</code>
+        </p>
+      </div>
+      <div class="card">
         <p class="card-title">Current stored JWT token</p>
         <div id="token-display" class="output neutral-out">No token stored.</div>
         <br>
@@ -280,6 +293,7 @@ API Base URL field at the top of the page and click Save.</div>
         <div class="output neutral-out" style="color:#c9d1d9">5.1  VPC · Subnets (AZ1 + AZ2) · NACLs · Security Groups · NAT Gateway
      Internet Gateway · Route Tables · VPC Endpoints (S3, DynamoDB, SecretsManager)
 5.2  Route 53 private zone (cloudbank.internal)
+     ALB (bank-alb) · 6 Lambda target groups · path-based listener rules
 5.3  Cognito User Pool · MFA (TOTP) · App Client · Hosted Domain
 5.4  Amplify app (cloud-bank-frontend)
 5.5  Lambdas: auth / accounts / transactions / notifications / kyc
@@ -303,9 +317,37 @@ API Base URL field at the top of the page and click Save.</div>
 <script>
   // ── State ──────────────────────────────────────────────────────────────────
   // Priority: localStorage override → config.js (auto-written by reset.sh) → empty
-  const _cfg = (typeof window.BANK_CONFIG !== 'undefined') ? window.BANK_CONFIG.apiBase : '';
+  const _cfg   = (typeof window.BANK_CONFIG !== 'undefined') ? window.BANK_CONFIG.apiBase : '';
+  const _albCfg = (typeof window.BANK_CONFIG !== 'undefined') ? window.BANK_CONFIG.albBase : '';
   let API_BASE = localStorage.getItem('apiBase') || _cfg;
   document.getElementById('apiBase').value = API_BASE;
+
+  // Populate ALB display card
+  if (_albCfg) {
+    document.getElementById('alb-url-display').textContent =
+      'ALB Base URL:  ' + _albCfg + '\n\n' +
+      'Routes:\n' +
+      '  ' + _albCfg + '/auth\n' +
+      '  ' + _albCfg + '/accounts\n' +
+      '  ' + _albCfg + '/transactions\n' +
+      '  ' + _albCfg + '/kyc\n' +
+      '  ' + _albCfg + '/notifications\n' +
+      '  ' + _albCfg + '/dlq';
+  }
+
+  function useAlbBase() {
+    if (!_albCfg) { alert('ALB URL not found — redeploy with ./reset.sh first.'); return; }
+    API_BASE = _albCfg;
+    document.getElementById('apiBase').value = API_BASE;
+    localStorage.setItem('apiBase', API_BASE);
+  }
+
+  function useApiGwBase() {
+    API_BASE = _cfg || localStorage.getItem('apiBase') || '';
+    document.getElementById('apiBase').value = API_BASE;
+    localStorage.setItem('apiBase', API_BASE);
+  }
+
   refreshAuthBar();
 
   function saveBase() {

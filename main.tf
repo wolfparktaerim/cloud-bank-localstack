@@ -43,6 +43,7 @@ provider "aws" {
     sns            = "http://localhost:4566"
     sqs            = "http://localhost:4566"
     sts            = "http://localhost:4566"
+    elbv2          = "http://localhost:4566"
     wafv2          = "http://localhost:4566"
     xray           = "http://localhost:4566"
   }
@@ -383,6 +384,137 @@ resource "aws_route53_record" "cache" {
   type    = "CNAME"
   ttl     = 300
   records = [aws_elasticache_cluster.redis.cache_nodes[0].address]
+}
+
+# ─── APPLICATION LOAD BALANCER (5.2) ─────────────────────────────────────────
+
+# Security group: allow HTTP inbound from anywhere, all egress
+resource "aws_security_group" "alb_sg" {
+  name        = "bank-alb-sg"
+  description = "Application Load Balancer — allow HTTP inbound from internet"
+  vpc_id      = aws_vpc.main.id
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "HTTP"
+  }
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  tags = { Name = "bank-alb-sg" }
+}
+
+# Internet-facing ALB spanning both public subnets (AZ1 + AZ2)
+resource "aws_lb" "bank" {
+  name               = "bank-alb"
+  internal           = false
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.alb_sg.id]
+  subnets            = [aws_subnet.public_az1.id, aws_subnet.public_az2.id]
+  tags               = { Name = "bank-alb" }
+}
+
+# One Lambda target group per microservice
+locals {
+  alb_functions = toset(["auth", "accounts", "transactions", "notifications", "kyc", "dlq"])
+}
+
+resource "aws_lb_target_group" "lambda" {
+  for_each    = local.alb_functions
+  name        = "bank-tg-${each.key}"
+  target_type = "lambda"
+  tags        = { Name = "bank-tg-${each.key}" }
+}
+
+# Convenience map: function name → Lambda resource (used for permissions + attachments)
+locals {
+  lambda_fn_map = {
+    auth          = aws_lambda_function.auth
+    accounts      = aws_lambda_function.accounts
+    transactions  = aws_lambda_function.transactions
+    notifications = aws_lambda_function.notifications
+    kyc           = aws_lambda_function.kyc
+    dlq           = aws_lambda_function.dlq
+  }
+}
+
+# Grant each Lambda permission to be invoked by its ALB target group
+resource "aws_lambda_permission" "alb" {
+  for_each      = local.lambda_fn_map
+  statement_id  = "AllowALBInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = each.value.function_name
+  principal     = "elasticloadbalancing.amazonaws.com"
+  source_arn    = aws_lb_target_group.lambda[each.key].arn
+}
+
+# Register each Lambda as the target inside its target group
+resource "aws_lb_target_group_attachment" "lambda" {
+  for_each         = local.lambda_fn_map
+  target_group_arn = aws_lb_target_group.lambda[each.key].arn
+  target_id        = each.value.arn
+  depends_on       = [aws_lambda_permission.alb]
+}
+
+# HTTP listener on port 80 — default: 404 for unknown paths
+resource "aws_lb_listener" "http" {
+  load_balancer_arn = aws_lb.bank.arn
+  port              = 80
+  protocol          = "HTTP"
+
+  default_action {
+    type = "fixed-response"
+    fixed_response {
+      content_type = "application/json"
+      message_body = "{\"error\":\"Route not found — use /auth /accounts /transactions /kyc /notifications /dlq\"}"
+      status_code  = "404"
+    }
+  }
+}
+
+# Path-based routing: /auth → auth Lambda, /accounts → accounts Lambda, etc.
+resource "aws_lb_listener_rule" "lambda" {
+  for_each = {
+    auth          = 10
+    accounts      = 20
+    transactions  = 30
+    notifications = 40
+    kyc           = 50
+    dlq           = 60
+  }
+
+  listener_arn = aws_lb_listener.http.arn
+  priority     = each.value
+
+  condition {
+    path_pattern {
+      values = ["/${each.key}", "/${each.key}/*"]
+    }
+  }
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.lambda[each.key].arn
+  }
+
+  depends_on = [aws_lb_target_group_attachment.lambda]
+}
+
+# Internal DNS alias: alb.cloudbank.internal → ALB
+resource "aws_route53_record" "alb" {
+  zone_id = aws_route53_zone.internal.zone_id
+  name    = "alb.cloudbank.internal"
+  type    = "A"
+  alias {
+    name                   = aws_lb.bank.dns_name
+    zone_id                = aws_lb.bank.zone_id
+    evaluate_target_health = true
+  }
 }
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1406,7 +1538,19 @@ resource "aws_api_gateway_stage" "prod" {
 
 locals {
   api_base = "http://localhost:4566/_aws/execute-api/${aws_api_gateway_rest_api.api.id}/prod"
+  # In LocalStack, ALB DNS resolves to 127.0.0.1 via *.localhost.localstack.cloud wildcard DNS
+  # The ALB is accessible through the LocalStack ELB gateway using the Host header
+  alb_base = "http://${aws_lb.bank.dns_name}:4566"
 }
+
+output "alb_dns_name"         { value = aws_lb.bank.dns_name }
+output "alb_base_url"         { value = local.alb_base }
+output "alb_auth_url"         { value = "${local.alb_base}/auth" }
+output "alb_accounts_url"     { value = "${local.alb_base}/accounts" }
+output "alb_transactions_url" { value = "${local.alb_base}/transactions" }
+output "alb_kyc_url"          { value = "${local.alb_base}/kyc" }
+output "alb_notifications_url"{ value = "${local.alb_base}/notifications" }
+output "alb_dlq_url"          { value = "${local.alb_base}/dlq" }
 
 output "api_base_url" { value = local.api_base }
 output "api_auth_url" { value = "${local.api_base}/auth" }

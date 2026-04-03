@@ -9,9 +9,9 @@ A production-grade banking system simulated entirely in a local environment usin
 | Section | Services |
 |---------|----------|
 | 5.1 Networking | VPC, 6 Subnets (AZ1 + AZ2), NACLs, Security Groups, NAT Gateway, Internet Gateway, Route Tables, VPC Endpoints |
-| 5.2 Traffic Management | Route 53 private hosted zone |
+| 5.2 Traffic Management | Route 53 private hosted zone · **ALB** (bank-alb, internet-facing, AZ1 + AZ2) with 6 Lambda target groups and path-based routing |
 | 5.3 Auth & Authorization | Cognito User Pool, MFA (TOTP), App Client, Hosted Domain |
-| 5.5 Application Tier | 5 Lambda functions (auth, accounts, transactions, notifications, kyc), per-Lambda IAM roles, X-Ray tracing |
+| 5.5 Application Tier | 6 Lambda functions (auth, accounts, transactions, notifications, kyc, dlq), per-Lambda IAM roles, X-Ray tracing |
 | 5.6 Storage | Secrets Manager, S3 (audit logs, KYC docs), RDS PostgreSQL, DynamoDB (4 tables), ElastiCache Redis |
 | 5.7 Security | KMS master key, WAF v2 (Common + SQLi rules), ACM Certificate |
 | 5.8 Reliability | SNS (2 topics), SQS (queue + DLQ), CloudWatch alarms, CloudTrail, AWS Backup |
@@ -37,9 +37,9 @@ chmod +x reset.sh
 The script will:
 1. Destroy any previous environment
 2. Restart Docker containers (LocalStack Pro + MongoDB)
-3. Package all 5 Lambda functions as separate zip files
+3. Package all 6 Lambda functions as separate zip files
 4. Run `terraform init` and `terraform apply`
-5. Write `config.js` — the dashboard will auto-load the API URL
+5. Write `config.js` — the dashboard will auto-load both the API Gateway URL and the ALB URL
 
 Once complete, open `index.html` directly in a browser.
 
@@ -396,6 +396,138 @@ This publishes a malformed transaction to SNS that will fail Lambda processing 3
 
 ---
 
+---
+
+## Load Balancer (ALB)
+
+### Architecture
+
+```
+Internet
+    │  HTTP :80
+    ▼
+┌─────────────────────────────────────────────┐
+│  bank-alb  (Application Load Balancer)      │
+│  public-az1 (10.0.1.0/24)                  │
+│  public-az2 (10.0.4.0/24)                  │
+│                                             │
+│  Listener rules (path-based):               │
+│    /auth          → bank-tg-auth            │
+│    /accounts      → bank-tg-accounts        │
+│    /transactions  → bank-tg-transactions    │
+│    /kyc           → bank-tg-kyc             │
+│    /notifications → bank-tg-notifications   │
+│    /dlq           → bank-tg-dlq             │
+│    (default)      → 404 fixed-response      │
+└─────────────┬───────────────────────────────┘
+              │  Lambda invoke
+              ▼
+   Lambda functions (private-lambda subnets)
+```
+
+The ALB sits in front of the same Lambda functions as API Gateway, providing a second entry point that demonstrates real AWS path-based load balancing. Both endpoints call identical code.
+
+### Get the ALB URL
+
+After `./reset.sh`:
+
+```bash
+terraform output alb_base_url
+# → http://bank-alb.elb.localhost.localstack.cloud:4566
+```
+
+```bash
+# Or inspect all ALB outputs at once
+terraform output | grep alb
+```
+
+### Test via curl
+
+Set the ALB base URL in a variable:
+
+```bash
+export ALB=$(terraform output -raw alb_base_url)
+```
+
+**Deposit through the ALB:**
+```bash
+curl -s -X POST "$ALB/transactions" \
+  -H "Content-Type: application/json" \
+  -d '{"action":"deposit","account_id":"USER_ALB","amount":250}' | jq
+```
+
+**Register a user through the ALB:**
+```bash
+curl -s -X POST "$ALB/auth" \
+  -H "Content-Type: application/json" \
+  -d '{"action":"register","username":"albuser","email":"alb@cloudbank.com","password":"MyP@ssword123!"}' | jq
+```
+
+**Create an account through the ALB:**
+```bash
+curl -s -X POST "$ALB/accounts" \
+  -H "Content-Type: application/json" \
+  -d '{"action":"create_account","account_id":"ALB-001","owner_name":"ALB User","account_type":"SAVINGS"}' | jq
+```
+
+**Hit an unknown path (verifies default 404 rule):**
+```bash
+curl -s "$ALB/unknown" | jq
+# → {"error":"Route not found — use /auth /accounts /transactions /kyc /notifications /dlq"}
+```
+
+### Verify the ALB via AWS CLI
+
+```bash
+# Describe the load balancer
+aws --endpoint-url=http://localhost:4566 elbv2 describe-load-balancers \
+  --region ap-southeast-1 | jq '.LoadBalancers[] | {Name,DNSName,State}'
+
+# List all target groups
+aws --endpoint-url=http://localhost:4566 elbv2 describe-target-groups \
+  --region ap-southeast-1 | jq '.TargetGroups[] | {Name:.TargetGroupName, Type:.TargetType}'
+
+# Check target health for the auth target group (replace ARN from previous command)
+aws --endpoint-url=http://localhost:4566 elbv2 describe-target-health \
+  --target-group-arn <arn-of-bank-tg-auth> \
+  --region ap-southeast-1 | jq
+
+# List listener rules
+aws --endpoint-url=http://localhost:4566 elbv2 describe-rules \
+  --listener-arn <arn-of-http-listener> \
+  --region ap-southeast-1 | jq '.Rules[] | {Priority, Conditions, Actions}'
+```
+
+### Visualise: side-by-side comparison
+
+Run the same request through both endpoints and confirm identical results:
+
+```bash
+export API=$(terraform output -raw api_base_url)
+export ALB=$(terraform output -raw alb_base_url)
+
+# API Gateway path
+curl -s -X POST "$API/transactions" \
+  -H "Content-Type: application/json" \
+  -d '{"action":"deposit","account_id":"COMPARE_01","amount":100}' | jq
+
+# ALB path (same Lambda, different ingress)
+curl -s -X POST "$ALB/transactions" \
+  -H "Content-Type: application/json" \
+  -d '{"action":"deposit","account_id":"COMPARE_01","amount":100}' | jq
+```
+
+Both calls reach the same `lambda_transactions` function and write to the same MongoDB instance.
+
+### Switch the dashboard between API Gateway and ALB
+
+1. Open `index.html` in your browser
+2. Go to the **Settings** tab
+3. Click **Switch API Base to ALB** — all tab requests now go through the ALB
+4. Click **Switch API Base to API Gateway** to revert
+
+---
+
 ## Common Issues
 
 | Error | Cause | Fix |
@@ -422,4 +554,20 @@ This destroys all existing resources, rebuilds all Lambda packages, and re-deplo
 
 ```bat
 reset.bat
+```
+
+The batch script mirrors `reset.sh` exactly — it packages all 6 Lambdas (including `dlq`), deploys infrastructure, and writes both `apiBase` and `albBase` into `config.js`.
+
+To test the ALB from PowerShell after deployment:
+
+```powershell
+$ALB = terraform output -raw alb_base_url
+
+# Deposit via ALB
+Invoke-RestMethod -Method Post -Uri "$ALB/transactions" `
+  -ContentType "application/json" `
+  -Body '{"action":"deposit","account_id":"WIN_01","amount":100}' | ConvertTo-Json
+
+# Verify ALB in AWS CLI
+aws --endpoint-url=http://localhost:4566 elbv2 describe-load-balancers --region ap-southeast-1
 ```
