@@ -16,7 +16,7 @@ fi
 rm -f .terraform.tfstate.lock.info
 rm -rf .terraform/
 rm -f terraform.tfstate*
-rm -f lambda_auth.zip lambda_accounts.zip lambda_transactions.zip lambda_notifications.zip lambda_kyc.zip lambda.zip
+rm -f lambda_auth.zip lambda_accounts.zip lambda_transactions.zip lambda_notifications.zip lambda_kyc.zip lambda_dlq.zip lambda.zip
 
 # 4. Reset containers
 docker-compose down -v

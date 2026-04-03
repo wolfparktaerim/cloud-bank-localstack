@@ -338,7 +338,9 @@ API Base URL field at the top of the page and click Save.</div>
   }
 
   function headers() {
-    const h = { 'Content-Type': 'application/json' };
+    // Use text/plain to avoid triggering browser CORS preflight (OPTIONS).
+    // The backend Lambdas parse JSON from the raw body string just fine.
+    const h = { 'Content-Type': 'text/plain;charset=UTF-8' };
     const tok = localStorage.getItem('jwt');
     if (tok) h['Authorization'] = tok;
     return h;
@@ -366,7 +368,11 @@ API Base URL field at the top of the page and click Save.</div>
       return data;
     } catch (e) {
       out.className = 'output err';
-      out.textContent = 'Fetch error: ' + e.message;
+      out.textContent = 'Fetch error: ' + e.message +
+        '\n\nTips:' +
+        '\n- Open the UI at http://localhost:8000/index.html (not file:///...)' +
+        '\n- Ensure API Base URL ends with /prod' +
+        '\n- If you changed API Base before, clear it with: localStorage.removeItem("apiBase")';
       return null;
     }
   }
