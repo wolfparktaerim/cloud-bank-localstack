@@ -393,7 +393,6 @@ Windows / PowerShell (no Bash required):
 ```
 
 This publishes a malformed transaction to SNS that will fail Lambda processing 3 times, then automatically move to the DLQ.
-```
 
 ---
 
