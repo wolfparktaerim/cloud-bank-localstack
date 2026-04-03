@@ -1,6 +1,10 @@
 import boto3, json, os, uuid
 from pymongo import MongoClient
 from datetime import datetime
+from aws_xray_sdk.core import xray_recorder, patch_all
+
+patch_all()
+xray_recorder.configure(service='lambda-transactions')
 
 ENDPOINT           = os.environ.get("LOCALSTACK_ENDPOINT",     "http://localstack:4566")
 REGION             = os.environ.get("AWS_DEFAULT_REGION",      "ap-southeast-1")
@@ -140,6 +144,7 @@ def _parse_api_body(event):
     return json.loads(raw)
 
 
+@xray_recorder.capture()
 def handler(event, context):
     is_sqs = isinstance(event, dict) and "Records" in event
     try:

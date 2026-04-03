@@ -9,6 +9,7 @@ services:
     environment:
       - LOCALSTACK_AUTH_TOKEN=${LS_AUTH_TOKEN}
       - DEBUG=${DEBUG}
+      - EXTRA_CORS_ALLOWED_ORIGINS=*
       - DOCKER_HOST=unix:///var/run/docker.sock
     volumes:
       - "${TMPDIR:-/tmp}/localstack:/var/lib/localstack"

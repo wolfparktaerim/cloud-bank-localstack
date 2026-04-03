@@ -43,11 +43,15 @@ echo -e "\n✅ LocalStack Pro is READY."
 package_lambda() {
     local name=$1
     local needs_pymongo=$2
+    local needs_xray=$3
     echo "📦 Packaging lambda_${name}..."
     rm -rf "_pkg_${name}"
     mkdir "_pkg_${name}"
     if [ "$needs_pymongo" = "true" ]; then
         pip install --target "./_pkg_${name}" pymongo > /dev/null
+    fi
+    if [ "$needs_xray" = "true" ]; then
+        pip install --target "./_pkg_${name}" aws-xray-sdk > /dev/null
     fi
     cp "lambdas/${name}.py" "./_pkg_${name}/${name}.py"
     (cd "_pkg_${name}" && zip -r "../lambda_${name}.zip" . > /dev/null)
@@ -55,12 +59,12 @@ package_lambda() {
     echo "   ✅ lambda_${name}.zip"
 }
 
-package_lambda "auth"          "false"
-package_lambda "accounts"      "false"
-package_lambda "transactions"  "true"
-package_lambda "notifications" "false"
-package_lambda "kyc"           "false"
-package_lambda "dlq"           "false"
+package_lambda "auth"          "false" "true"
+package_lambda "accounts"      "false" "true"
+package_lambda "transactions"  "true"  "true"
+package_lambda "notifications" "false" "true"
+package_lambda "kyc"           "false" "true"
+package_lambda "dlq"           "false" "true"
 
 # ──────────────────────────────────────────────────────────────────────────────
 # 6. Deploy infrastructure

@@ -32,6 +32,8 @@ A production-grade banking system simulated entirely in a local environment usin
 ```bash
 chmod +x reset.sh
 ./reset.sh
+python3 -m http.server 8000
+pkill -f "python3 -m http.server 8000"
 ```
 
 The script will:
@@ -349,6 +351,19 @@ aws --endpoint-url=http://localhost:4566 rds describe-db-instances \
 # ElastiCache clusters
 aws --endpoint-url=http://localhost:4566 elasticache describe-cache-clusters \
   --region ap-southeast-1
+
+# X-Ray traces (after triggering Lambdas)
+# macOS/Linux:
+aws --endpoint-url=http://localhost:4566 --output json xray get-trace-summaries \
+  --region ap-southeast-1 \
+  --start-time $(date -u -v-1H +%Y-%m-%dT%H:%M:%SZ) \
+  --end-time $(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+# Windows/PowerShell:
+aws --endpoint-url=http://localhost:4566 --output json xray get-trace-summaries \
+  --region ap-southeast-1 \
+  --start-time $((Get-Date).AddHours(-1).ToString('u').Replace(' ', 'T')) \
+  --end-time $((Get-Date).ToString('u').Replace(' ', 'T'))
 ```
 
 ---
@@ -395,6 +410,45 @@ Windows / PowerShell (no Bash required):
 This publishes a malformed transaction to SNS that will fail Lambda processing 3 times, then automatically move to the DLQ.
 
 ---
+
+### Step 8 — X-Ray Tracing
+
+To verify that AWS X-Ray tracing is enabled and working for the Lambda functions (as per section 5.5 of the architecture):
+
+#### 8a. Trigger Lambda executions
+
+Perform actions that invoke Lambdas to generate traces, such as:
+- Making a deposit or withdrawal via the **Transactions** tab in the dashboard.
+- Running a load test: `k6 run --env API_BASE=$(terraform output -raw api_base_url) load-test/k6.js`
+
+Wait 5-10 seconds for traces to be recorded.
+
+#### 8b. Query traces via AWS CLI
+
+Use these commands to inspect X-Ray traces:
+
+```bash
+# List recent trace summaries (shows TraceId, duration, status)
+# macOS/Linux:
+aws --endpoint-url=http://localhost:4566 --output json xray get-trace-summaries \
+  --region ap-southeast-1 \
+  --start-time $(date -u -v-1H +%Y-%m-%dT%H:%M:%SZ) \
+  --end-time $(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+# Windows/PowerShell:
+aws --endpoint-url=http://localhost:4566 --output json xray get-trace-summaries \
+  --region ap-southeast-1 \
+  --start-time $((Get-Date).AddHours(-1).ToString('u').Replace(' ', 'T')) \
+  --end-time $((Get-Date).ToString('u').Replace(' ', 'T'))
+
+# Get detailed trace data for a specific TraceId (replace <TraceId> from above)
+aws --endpoint-url=http://localhost:4566 --output json xray batch-get-traces \
+  --trace-ids <TraceId> --region ap-southeast-1
+```
+
+Expected output: Traces with segments for Lambda functions (e.g., `lambda-transactions`), including sub-segments for downstream services like DynamoDB, S3, and MongoDB calls.
+
+If no traces appear, ensure Lambdas have X-Ray enabled in `main.tf` and IAM roles include `AWSXRayDaemonWriteAccess`.
 
 ---
 
@@ -698,4 +752,10 @@ Invoke-RestMethod -Method Post -Uri "$ALB/transactions" `
 
 # Verify ALB in AWS CLI
 aws --endpoint-url=http://localhost:4566 elbv2 describe-load-balancers --region ap-southeast-1
+
+# Check X-Ray traces (after triggering Lambdas)
+aws --endpoint-url=http://localhost:4566 --output json xray get-trace-summaries `
+  --region ap-southeast-1 `
+  --start-time $((Get-Date).AddHours(-1).ToString('u').Replace(' ', 'T')) `
+  --end-time $((Get-Date).ToString('u').Replace(' ', 'T'))
 ```

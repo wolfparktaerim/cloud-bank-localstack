@@ -749,7 +749,8 @@ resource "aws_iam_role_policy" "transactions_policy" {
       { Effect = "Allow", Action = ["sqs:ReceiveMessage", "sqs:DeleteMessage", "sqs:GetQueueAttributes"], Resource = aws_sqs_queue.transaction_queue.arn },
       { Effect = "Allow", Action = ["sns:Publish"], Resource = aws_sns_topic.transaction_events.arn },
       { Effect = "Allow", Action = ["dynamodb:PutItem", "dynamodb:GetItem", "dynamodb:Query"], Resource = aws_dynamodb_table.audit_events.arn },
-      { Effect = "Allow", Action = ["kms:Decrypt", "kms:GenerateDataKey"], Resource = aws_kms_key.bank.arn }
+      { Effect = "Allow", Action = ["kms:Decrypt", "kms:GenerateDataKey"], Resource = aws_kms_key.bank.arn },
+      { Effect = "Allow", Action = ["xray:PutTraceSegments", "xray:PutTelemetryRecords"], Resource = "*" }
     ]
   })
 }
