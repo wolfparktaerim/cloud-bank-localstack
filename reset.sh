@@ -51,7 +51,7 @@ package_lambda() {
         pip3 install --target "./_pkg_${name}" pymongo > /dev/null
     fi
     if [ "$needs_xray" = "true" ]; then
-        pip install --target "./_pkg_${name}" aws-xray-sdk > /dev/null
+        pip3 install --target "./_pkg_${name}" aws-xray-sdk > /dev/null
     fi
     cp "lambdas/${name}.py" "./_pkg_${name}/${name}.py"
     (cd "_pkg_${name}" && zip -r "../lambda_${name}.zip" . > /dev/null)
