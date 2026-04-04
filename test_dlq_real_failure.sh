@@ -51,10 +51,11 @@ echo "         → Moved to DLQ ✓"
 echo ""
 
 # Step 3: Wait for retries
-echo "Step 3: Waiting 45 seconds for Lambda to retry 3 times..."
+# Visibility timeout is 30s, so 3 retries take ~90-120 seconds
+echo "Step 3: Waiting 120 seconds for Lambda to retry 3 times..."
 echo "─────────────────────────────────────────────────────────────────"
-for i in {45..1}; do
-  printf "\rTime remaining: %02d seconds" $i
+for i in {120..1}; do
+  printf "\rTime remaining: %03d seconds" $i
   sleep 1
 done
 echo ""

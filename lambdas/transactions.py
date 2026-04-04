@@ -157,6 +157,7 @@ def handler(event, context):
         # ── SQS event source (batch of records from bank-transaction-queue) ──
         if is_sqs:
             failures = []
+            errors   = []
             for record in event["Records"]:
                 try:
                     body = _parse_sqs_body(record["body"])
@@ -164,9 +165,22 @@ def handler(event, context):
                     if code >= 400:
                         # Report non-2xx business errors as failures for retry/DLQ testing.
                         failures.append({"itemIdentifier": record["messageId"]})
-                except Exception:
+                        errors.append(record["messageId"])
+                except Exception as exc:
                     failures.append({"itemIdentifier": record["messageId"]})
-            # Return partial batch failure response
+                    errors.append(record["messageId"])
+
+            # LocalStack does not fully support ReportBatchItemFailures —
+            # it deletes messages after a successful Lambda return regardless
+            # of the batchItemFailures list. To ensure messages move to DLQ
+            # after maxReceiveCount retries, always raise when there are
+            # failures so SQS increments the receive count.
+            if failures:
+                raise RuntimeError(
+                    f"{len(errors)} of {len(event['Records'])} record(s) failed: {errors}"
+                )
+
+            # Return partial batch failure response (some succeeded)
             return {"batchItemFailures": failures}
 
         # ── API Gateway / direct invocation ──────────────────────────────────
