@@ -157,6 +157,7 @@ def handler(event, context):
         # ── SQS event source (batch of records from bank-transaction-queue) ──
         if is_sqs:
             failures = []
+            errors   = []
             for record in event["Records"]:
                 try:
                     body = _parse_sqs_body(record["body"])
