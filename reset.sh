@@ -48,7 +48,7 @@ package_lambda() {
     rm -rf "_pkg_${name}"
     mkdir "_pkg_${name}"
     if [ "$needs_pymongo" = "true" ]; then
-        pip install --target "./_pkg_${name}" pymongo > /dev/null
+        pip3 install --target "./_pkg_${name}" pymongo > /dev/null
     fi
     if [ "$needs_xray" = "true" ]; then
         pip install --target "./_pkg_${name}" aws-xray-sdk > /dev/null

@@ -98,7 +98,6 @@ export default function () {
 
     res = post('auth', { action: 'login', username, password });
     authLatency.add(res.timings.duration);
-authLatency.add(res.timings.duration);
     ok(res, 'login');
 
     res = post('auth', { action: 'get_user', username });
