@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Cloud Bank — LocalStack Pro</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Courier New', monospace; background: #0d1117; color: #c9d1d9; min-height: 100vh; }
+
+    /* ── Header ── */
+    header {
+      background: #161b22; border-bottom: 1px solid #30363d;
+      padding: 12px 24px; display: flex; align-items: center; gap: 12px;
+    }
+    header h1 { font-size: 17px; color: #58a6ff; }
+    .badge { background: #1f6feb; color: #fff; font-size: 11px; padding: 2px 8px; border-radius: 10px; }
+    .auth-bar { margin-left: auto; display: flex; align-items: center; gap: 8px; font-size: 12px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .dot.on  { background: #3fb950; }
+    .dot.off { background: #f85149; }
+
+    /* ── Layout ── */
+    .layout { display: grid; grid-template-columns: 200px 1fr; min-height: calc(100vh - 49px); }
+    nav { background: #161b22; border-right: 1px solid #30363d; padding: 12px 0; }
+    .nav-section { font-size: 10px; color: #484f58; text-transform: uppercase; letter-spacing: 1px; padding: 14px 16px 6px; }
+    nav button {
+      display: block; width: 100%; text-align: left; padding: 9px 18px;
+      background: none; border: none; border-left: 3px solid transparent;
+      color: #8b949e; cursor: pointer; font-family: inherit; font-size: 13px;
+    }
+    nav button:hover { color: #c9d1d9; background: #1c2128; }
+    nav button.active { color: #58a6ff; background: #1c2128; border-left-color: #1f6feb; }
+
+    /* ── Main content ── */
+    main { padding: 20px 24px; overflow-y: auto; }
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* ── Config bar ── */
+    .config-bar {
+      background: #161b22; border: 1px solid #30363d; border-radius: 6px;
+      padding: 10px 14px; margin-bottom: 18px; display: flex; align-items: center; gap: 8px;
+    }
+    .config-bar label { font-size: 11px; color: #8b949e; white-space: nowrap; }
+    .config-bar input { flex: 1; }
+
+    /* ── Cards ── */
+    h2 { font-size: 15px; color: #e6edf3; margin-bottom: 14px; }
+    .card { background: #161b22; border: 1px solid #30363d; border-radius: 6px; padding: 14px 16px; margin-bottom: 14px; }
+    .card-title { font-size: 10px; color: #484f58; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+
+    /* ── Form elements ── */
+    .row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+    .field { flex: 1; min-width: 140px; }
+    label { font-size: 11px; color: #8b949e; display: block; margin-bottom: 3px; }
+    input, select {
+      width: 100%; padding: 7px 9px; background: #0d1117; border: 1px solid #30363d;
+      border-radius: 4px; color: #c9d1d9; font-family: inherit; font-size: 13px;
+    }
+    input:focus, select:focus { outline: none; border-color: #1f6feb; }
+
+    /* ── Buttons ── */
+    .btn-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 2px; }
+    .btn {
+      padding: 7px 14px; border: none; border-radius: 4px; cursor: pointer;
+      font-family: inherit; font-size: 12px; font-weight: 700; transition: filter .1s;
+    }
+    .btn:hover { filter: brightness(1.15); }
+    .primary   { background: #1f6feb; color: #fff; }
+    .success   { background: #238636; color: #fff; }
+    .danger    { background: #b62324; color: #fff; }
+    .warning   { background: #9e6a03; color: #fff; }
+    .neutral   { background: #21262d; color: #c9d1d9; border: 1px solid #30363d; }
+
+    /* ── Output ── */
+    .output {
+      margin-top: 12px; background: #010409; border: 1px solid #30363d; border-radius: 4px;
+      padding: 12px; font-size: 12px; min-height: 70px; white-space: pre-wrap;
+      color: #3fb950; word-break: break-all;
+    }
+    .output.err { color: #f85149; }
+    .output.neutral-out { color: #8b949e; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>☁ Cloud Bank</h1>
+  <span class="badge">LocalStack Pro</span>
+  <div class="auth-bar">
+    <div id="authDot" class="dot off"></div>
+    <span id="authLabel">Not authenticated</span>
+    <button class="btn neutral" style="font-size:11px;padding:4px 10px" onclick="clearToken()">Clear JWT</button>
+  </div>
+</header>
+
+<div class="layout">
+  <nav>
+    <div class="nav-section">Services</div>
+    <button class="active" onclick="show('auth',this)">🔐  Auth</button>
+    <button onclick="show('accounts',this)">🏦  Accounts</button>
+    <button onclick="show('transactions',this)">💸  Transactions</button>
+    <button onclick="show('kyc',this)">🪪  KYC</button>
+    <button onclick="show('notifications',this)">🔔  Notifications</button>
+    <div class="nav-section">Setup</div>
+    <button onclick="show('settings',this)">⚙  Settings</button>
+  </nav>
+
+  <main>
+    <!-- Config bar (always visible) -->
+    <div class="config-bar">
+      <label>API Base URL</label>
+      <input id="apiBase" placeholder="http://localhost:4566/_aws/execute-api/{id}/prod">
+      <button class="btn neutral" onclick="saveBase()">Save</button>
+    </div>
+
+    <!-- ══ AUTH ══════════════════════════════════════════════════════════════ -->
+    <div id="panel-auth" class="panel active">
+      <h2>Authentication — Cognito</h2>
+      <div class="card">
+        <p class="card-title">Register new user</p>
+        <div class="row">
+          <div class="field"><label>Username</label><input id="reg-user" placeholder="john_doe"></div>
+          <div class="field"><label>Email</label><input id="reg-email" type="email" placeholder="john@example.com"></div>
+          <div class="field"><label>Password (min 12 chars)</label><input id="reg-pass" type="password" placeholder="MyP@ssword123!"></div>
+        </div>
+        <div class="btn-row"><button class="btn primary" onclick="callAuth('register')">Register</button></div>
+      </div>
+      <div class="card">
+        <p class="card-title">Login</p>
+        <div class="row">
+          <div class="field"><label>Username</label><input id="login-user" placeholder="john_doe"></div>
+          <div class="field"><label>Password</label><input id="login-pass" type="password"></div>
+        </div>
+        <div class="btn-row">
+          <button class="btn success" onclick="callAuth('login')">Login — get JWT</button>
+        </div>
+      </div>
+      <div class="card">
+        <p class="card-title">Get user details</p>
+        <div class="row">
+          <div class="field"><label>Username</label><input id="getuser-name" placeholder="john_doe"></div>
+        </div>
+        <div class="btn-row"><button class="btn neutral" onclick="callAuth('get_user')">Get User</button></div>
+      </div>
+      <div id="out-auth" class="output neutral-out">Output appears here…</div>
+    </div>
+
+    <!-- ══ ACCOUNTS ══════════════════════════════════════════════════════════ -->
+    <div id="panel-accounts" class="panel">
+      <h2>Account Management — DynamoDB</h2>
+      <div class="card">
+        <p class="card-title">Create account</p>
+        <div class="row">
+          <div class="field"><label>Account ID (leave blank to auto-generate)</label><input id="acc-id" placeholder="ACC-001"></div>
+          <div class="field"><label>Owner Name</label><input id="acc-owner" placeholder="John Doe"></div>
+          <div class="field"><label>Type</label>
+            <select id="acc-type"><option>SAVINGS</option><option>CHECKING</option><option>BUSINESS</option></select>
+          </div>
+        </div>
+        <div class="btn-row"><button class="btn success" onclick="callAccounts('create_account')">Create Account</button></div>
+      </div>
+      <div class="card">
+        <p class="card-title">Query / manage</p>
+        <div class="row">
+          <div class="field"><label>Account ID</label><input id="query-acc-id" placeholder="ACC-001"></div>
+        </div>
+        <div class="btn-row">
+          <button class="btn primary" onclick="callAccounts('get_account')">Get Account</button>
+          <button class="btn neutral" onclick="callAccounts('list_accounts')">List All</button>
+          <button class="btn danger"  onclick="callAccounts('close_account')">Close Account</button>
+        </div>
+      </div>
+      <div id="out-accounts" class="output neutral-out">Output appears here…</div>
+    </div>
+
+    <!-- ══ TRANSACTIONS ═══════════════════════════════════════════════════════ -->
+    <div id="panel-transactions" class="panel">
+      <h2>Transactions — MongoDB + S3 Audit + SNS</h2>
+      <div class="card">
+        <div class="row">
+          <div class="field"><label>Account ID</label><input id="tx-acc" value="USER_01"></div>
+          <div class="field"><label>Amount ($)</label><input id="tx-amt" type="number" value="100" min="0" step="0.01"></div>
+          <div class="field"><label>Transfer To (transfer only)</label><input id="tx-to" placeholder="USER_02"></div>
+        </div>
+        <div class="btn-row">
+          <button class="btn success" onclick="callTx('deposit')">Deposit</button>
+          <button class="btn danger"  onclick="callTx('withdraw')">Withdraw</button>
+          <button class="btn warning" onclick="callTx('transfer')">Transfer</button>
+          <button class="btn primary" onclick="callTx('balance')">Check Balance</button>
+        </div>
+      </div>
+      <div id="out-transactions" class="output neutral-out">Output appears here…</div>
+    </div>
+
+    <!-- ══ KYC ════════════════════════════════════════════════════════════════ -->
+    <div id="panel-kyc" class="panel">
+      <h2>KYC Verification — S3 + DynamoDB</h2>
+      <div class="card">
+        <p class="card-title">Submit KYC</p>
+        <div class="row">
+          <div class="field"><label>User ID</label><input id="kyc-uid" placeholder="USER_01"></div>
+          <div class="field"><label>Full Name</label><input id="kyc-name" placeholder="John Doe"></div>
+          <div class="field"><label>ID Type</label>
+            <select id="kyc-id-type"><option>PASSPORT</option><option>DRIVER_LICENSE</option><option>NATIONAL_ID</option></select>
+          </div>
+          <div class="field"><label>ID Number</label><input id="kyc-id-num" placeholder="P12345678"></div>
+        </div>
+        <div class="btn-row"><button class="btn primary" onclick="callKyc('submit_kyc')">Submit KYC</button></div>
+      </div>
+      <div class="card">
+        <p class="card-title">Review</p>
+        <div class="row">
+          <div class="field"><label>User ID (for status check)</label><input id="kyc-check-uid" placeholder="USER_01"></div>
+          <div class="field"><label>KYC ID (for approve / reject)</label><input id="kyc-id" placeholder="uuid from submit response"></div>
+          <div class="field"><label>Rejection reason</label><input id="kyc-reason" placeholder="Insufficient documentation"></div>
+        </div>
+        <div class="btn-row">
+          <button class="btn neutral"  onclick="callKyc('check_status')">Check Status</button>
+          <button class="btn success"  onclick="callKyc('approve_kyc')">Approve</button>
+          <button class="btn danger"   onclick="callKyc('reject_kyc')">Reject</button>
+        </div>
+      </div>
+      <div id="out-kyc" class="output neutral-out">Output appears here…</div>
+    </div>
+
+    <!-- ══ NOTIFICATIONS ══════════════════════════════════════════════════════ -->
+    <div id="panel-notifications" class="panel">
+      <h2>Notifications — SNS + SES</h2>
+      <div class="card">
+        <p class="card-title">Send SNS alert</p>
+        <div class="row">
+          <div class="field"><label>Subject</label><input id="notif-subject" value="Bank Alert"></div>
+          <div class="field"><label>Message</label><input id="notif-msg" value="Test notification from Cloud Bank"></div>
+        </div>
+        <div class="btn-row"><button class="btn warning" onclick="callNotif('send_alert')">Publish to SNS</button></div>
+      </div>
+      <div class="card">
+        <p class="card-title">Send email (SES)</p>
+        <div class="row">
+          <div class="field"><label>To</label><input id="notif-to" type="email" placeholder="user@example.com"></div>
+          <div class="field"><label>Subject</label><input id="notif-email-subj" value="Bank Notification"></div>
+          <div class="field"><label>Message</label><input id="notif-email-msg" value="Your transaction has been processed."></div>
+        </div>
+        <div class="btn-row"><button class="btn primary" onclick="callNotif('send_email')">Send Email</button></div>
+      </div>
+      <div class="card">
+        <p class="card-title">Subscriptions</p>
+        <div class="row">
+          <div class="field"><label>Email to subscribe</label><input id="notif-sub" placeholder="user@example.com"></div>
+        </div>
+        <div class="btn-row">
+          <button class="btn success" onclick="callNotif('subscribe')">Subscribe</button>
+          <button class="btn neutral" onclick="callNotif('list_subscriptions')">List Subscriptions</button>
+        </div>
+      </div>
+      <div id="out-notifications" class="output neutral-out">Output appears here…</div>
+    </div>
+
+    <!-- ══ SETTINGS ═══════════════════════════════════════════════════════════ -->
+    <div id="panel-settings" class="panel">
+      <h2>Settings</h2>
+      <div class="card">
+        <p class="card-title">How to get the API Base URL</p>
+        <div class="output neutral-out">Run:  terraform output api_base_url
+
+Then paste the printed URL (without quotes) into the
+API Base URL field at the top of the page and click Save.</div>
+      </div>
+      <div class="card">
+        <p class="card-title">Application Load Balancer (ALB)</p>
+        <div class="output neutral-out" id="alb-url-display">ALB URL loads from config.js after deployment…</div>
+        <br>
+        <div class="btn-row">
+          <button class="btn neutral" onclick="useAlbBase()">Switch API Base to ALB</button>
+          <button class="btn neutral" onclick="useApiGwBase()">Switch API Base to API Gateway</button>
+        </div>
+        <p style="color:#8b949e;font-size:0.85em;margin-top:8px">
+          The ALB routes the same requests via path-based rules across both AZs.<br>
+          Test with: <code>terraform output alb_base_url</code>
+        </p>
+      </div>
+      <div class="card">
+        <p class="card-title">Current stored JWT token</p>
+        <div id="token-display" class="output neutral-out">No token stored.</div>
+        <br>
+        <div class="btn-row">
+          <button class="btn danger" onclick="clearToken()">Clear Token</button>
+        </div>
+      </div>
+      <div class="card">
+        <p class="card-title">Architecture deployed</p>
+        <div class="output neutral-out" style="color:#c9d1d9">5.1  VPC · Subnets (AZ1 + AZ2) · NACLs · Security Groups · NAT Gateway
+     Internet Gateway · Route Tables · VPC Endpoints (S3, DynamoDB, SecretsManager)
+5.2  Route 53 private zone (cloudbank.internal)
+     ALB (bank-alb) · 6 Lambda target groups · path-based listener rules
+5.3  Cognito User Pool · MFA (TOTP) · App Client · Hosted Domain
+5.4  Amplify app (cloud-bank-frontend)
+5.5  Lambdas: auth / accounts / transactions / notifications / kyc
+     Per-Lambda IAM roles · X-Ray tracing · VPC placement · DLQ
+5.6  Secrets Manager (MongoDB + RDS) · S3 (audit, KYC, monitoring)
+     RDS PostgreSQL · DynamoDB (sessions, audit-events, accounts, kyc-status)
+     ElastiCache Redis
+5.7  KMS (master key + alias) · WAF v2 (Common + SQLi rules)
+     GuardDuty · ACM Certificate
+5.8  SNS (alerts + transaction-events) · SQS (queue + DLQ)
+     CloudWatch alarms (Lambda errors, DLQ depth, RDS CPU)
+     CloudTrail · AWS Backup (daily @ 02:00 UTC, 30-day retention)</div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Auto-generated by reset.sh after each deploy -->
+<script src="config.js"></script>
+<script>
+  // ── State ──────────────────────────────────────────────────────────────────
+  // Priority: localStorage override → config.js (auto-written by reset.sh) → empty
+  const _cfg   = (typeof window.BANK_CONFIG !== 'undefined') ? window.BANK_CONFIG.apiBase : '';
+  const _albCfg = (typeof window.BANK_CONFIG !== 'undefined') ? window.BANK_CONFIG.albBase : '';
+  let API_BASE = localStorage.getItem('apiBase') || _cfg;
+  document.getElementById('apiBase').value = API_BASE;
+
+  // Populate ALB display card
+  if (_albCfg) {
+    document.getElementById('alb-url-display').textContent =
+      'ALB Base URL:  ' + _albCfg + '\n\n' +
+      'Routes:\n' +
+      '  ' + _albCfg + '/auth\n' +
+      '  ' + _albCfg + '/accounts\n' +
+      '  ' + _albCfg + '/transactions\n' +
+      '  ' + _albCfg + '/kyc\n' +
+      '  ' + _albCfg + '/notifications\n' +
+      '  ' + _albCfg + '/dlq';
+  }
+
+  function useAlbBase() {
+    if (!_albCfg) { alert('ALB URL not found — redeploy with ./reset.sh first.'); return; }
+    API_BASE = _albCfg;
+    document.getElementById('apiBase').value = API_BASE;
+    localStorage.setItem('apiBase', API_BASE);
+  }
+
+  function useApiGwBase() {
+    API_BASE = _cfg || localStorage.getItem('apiBase') || '';
+    document.getElementById('apiBase').value = API_BASE;
+    localStorage.setItem('apiBase', API_BASE);
+  }
+
+  refreshAuthBar();
+
+  function saveBase() {
+    API_BASE = document.getElementById('apiBase').value.trim().replace(/\/$/, '');
+    localStorage.setItem('apiBase', API_BASE);
+  }
+
+  function show(name, btn) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+    document.getElementById('panel-' + name).classList.add('active');
+    btn.classList.add('active');
+    if (name === 'settings') {
+      const tok = localStorage.getItem('jwt');
+      document.getElementById('token-display').textContent = tok
+        ? tok.substring(0, 60) + '…  (truncated)'
+        : 'No token stored.';
+    }
+  }
+
+  function clearToken() {
+    localStorage.removeItem('jwt');
+    refreshAuthBar();
+  }
+
+  function refreshAuthBar() {
+    const tok = localStorage.getItem('jwt');
+    document.getElementById('authDot').className   = 'dot ' + (tok ? 'on' : 'off');
+    document.getElementById('authLabel').textContent = tok ? 'Authenticated' : 'Not authenticated';
+  }
+
+  function headers() {
+    // Use text/plain to avoid triggering browser CORS preflight (OPTIONS).
+    // The backend Lambdas parse JSON from the raw body string just fine.
+    const h = { 'Content-Type': 'text/plain;charset=UTF-8' };
+    const tok = localStorage.getItem('jwt');
+    if (tok) h['Authorization'] = tok;
+    return h;
+  }
+
+  // ── Core fetch helper ──────────────────────────────────────────────────────
+  async function call(route, body, outId) {
+    const out = document.getElementById(outId);
+    out.className = 'output neutral-out';
+    out.textContent = '⏳ Calling /' + route + '…';
+
+    if (!API_BASE) {
+      out.className = 'output err';
+      out.textContent = 'API Base URL is not set.\nGo to Settings and paste the terraform output.';
+      return null;
+    }
+
+    try {
+      const res  = await fetch(`${API_BASE}/${route}`, {
+        method: 'POST', headers: headers(), body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      out.className = res.ok ? 'output' : 'output err';
+      out.textContent = JSON.stringify(data, null, 2);
+      return data;
+    } catch (e) {
+      out.className = 'output err';
+      out.textContent = 'Fetch error: ' + e.message +
+        '\n\nTips:' +
+        '\n- Open the UI at http://localhost:8000/index.html (not file:///...)' +
+        '\n- Ensure API Base URL ends with /prod' +
+        '\n- If you changed API Base before, clear it with: localStorage.removeItem("apiBase")';
+      return null;
+    }
+  }
+
+  // ── Auth ───────────────────────────────────────────────────────────────────
+  async function callAuth(action) {
+    const body = { action };
+    if (action === 'register') {
+      body.username = document.getElementById('reg-user').value;
+      body.email    = document.getElementById('reg-email').value;
+      body.password = document.getElementById('reg-pass').value;
+    } else if (action === 'login') {
+      body.username = document.getElementById('login-user').value;
+      body.password = document.getElementById('login-pass').value;
+    } else if (action === 'get_user') {
+      body.username = document.getElementById('getuser-name').value;
+    }
+    const data = await call('auth', body, 'out-auth');
+    if (data && data.access_token) {
+      localStorage.setItem('jwt', data.access_token);
+      refreshAuthBar();
+    }
+  }
+
+  // ── Accounts ───────────────────────────────────────────────────────────────
+  function callAccounts(action) {
+    const body = { action };
+    if (action === 'create_account') {
+      body.account_id   = document.getElementById('acc-id').value || undefined;
+      body.owner        = document.getElementById('acc-owner').value;
+      body.account_type = document.getElementById('acc-type').value;
+    } else if (action !== 'list_accounts') {
+      body.account_id = document.getElementById('query-acc-id').value;
+    }
+    call('accounts', body, 'out-accounts');
+  }
+
+  // ── Transactions ───────────────────────────────────────────────────────────
+  function callTx(action) {
+    const body = {
+      action,
+      account_id: document.getElementById('tx-acc').value,
+      amount:     parseFloat(document.getElementById('tx-amt').value) || 0,
+    };
+    if (action === 'transfer') body.to_account_id = document.getElementById('tx-to').value;
+    call('transactions', body, 'out-transactions');
+  }
+
+  // ── KYC ────────────────────────────────────────────────────────────────────
+  function callKyc(action) {
+    const body = { action };
+    if (action === 'submit_kyc') {
+      body.user_id   = document.getElementById('kyc-uid').value;
+      body.full_name = document.getElementById('kyc-name').value;
+      body.id_type   = document.getElementById('kyc-id-type').value;
+      body.id_number = document.getElementById('kyc-id-num').value;
+    } else if (action === 'check_status') {
+      body.user_id = document.getElementById('kyc-check-uid').value;
+    } else if (action === 'approve_kyc') {
+      body.kyc_id = document.getElementById('kyc-id').value;
+    } else if (action === 'reject_kyc') {
+      body.kyc_id  = document.getElementById('kyc-id').value;
+      body.reason  = document.getElementById('kyc-reason').value;
+    }
+    call('kyc', body, 'out-kyc');
+  }
+
+  // ── Notifications ──────────────────────────────────────────────────────────
+  function callNotif(action) {
+    const body = { action };
+    if (action === 'send_alert') {
+      body.subject = document.getElementById('notif-subject').value;
+      body.message = document.getElementById('notif-msg').value;
+    } else if (action === 'send_email') {
+      body.to      = document.getElementById('notif-to').value;
+      body.subject = document.getElementById('notif-email-subj').value;
+      body.message = document.getElementById('notif-email-msg').value;
+    } else if (action === 'subscribe') {
+      body.email = document.getElementById('notif-sub').value;
+    }
+    call('notifications', body, 'out-notifications');
+  }
+</script>
+</body>
+</html>
