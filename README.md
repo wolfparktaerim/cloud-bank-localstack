@@ -6,15 +6,15 @@ A production-grade banking system simulated entirely in a local environment usin
 
 ## Architecture Overview
 
-| Section | Services |
-|---------|----------|
-| 5.1 Networking | VPC, 6 Subnets (AZ1 + AZ2), NACLs, Security Groups, NAT Gateway, Internet Gateway, Route Tables, VPC Endpoints |
-| 5.2 Traffic Management | Route 53 private hosted zone · **ALB** (bank-alb, internet-facing, AZ1 + AZ2) with 6 Lambda target groups and path-based routing |
-| 5.3 Auth & Authorization | Cognito User Pool, MFA (TOTP), App Client, Hosted Domain |
-| 5.5 Application Tier | 6 Lambda functions (auth, accounts, transactions, notifications, kyc, dlq), per-Lambda IAM roles, X-Ray tracing |
-| 5.6 Storage | Secrets Manager, S3 (audit logs, KYC docs), RDS PostgreSQL, DynamoDB (4 tables), ElastiCache Redis |
-| 5.7 Security | KMS master key, WAF v2 (Common + SQLi rules), ACM Certificate |
-| 5.8 Reliability | SNS (2 topics), SQS (queue + DLQ), CloudWatch alarms, CloudTrail, AWS Backup |
+| Section                  | Services                                                                                                                         |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| 5.1 Networking           | VPC, 6 Subnets (AZ1 + AZ2), NACLs, Security Groups, NAT Gateway, Internet Gateway, Route Tables, VPC Endpoints                   |
+| 5.2 Traffic Management   | Route 53 private hosted zone · **ALB** (bank-alb, internet-facing, AZ1 + AZ2) with 6 Lambda target groups and path-based routing |
+| 5.3 Auth & Authorization | Cognito User Pool, MFA (TOTP), App Client, Hosted Domain                                                                         |
+| 5.5 Application Tier     | 6 Lambda functions (auth, accounts, transactions, notifications, kyc, dlq), per-Lambda IAM roles, X-Ray tracing                  |
+| 5.6 Storage              | Secrets Manager, S3 (audit logs, KYC docs), RDS PostgreSQL, DynamoDB (4 tables), ElastiCache Redis                               |
+| 5.7 Security             | KMS master key, WAF v2 (Common + SQLi rules), ACM Certificate                                                                    |
+| 5.8 Reliability          | SNS (2 topics), SQS (queue + DLQ), CloudWatch alarms, CloudTrail, AWS Backup                                                     |
 
 ---
 
@@ -29,7 +29,10 @@ A production-grade banking system simulated entirely in a local environment usin
 
 ## Deployment
 
+Ensure Docker Desktop is running
+
 ```bash
+docker compose up -d
 chmod +x reset.sh
 ./reset.sh
 python3 -m http.server 8000
@@ -37,6 +40,7 @@ pkill -f "python3 -m http.server 8000"
 ```
 
 The script will:
+
 1. Destroy any previous environment
 2. Restart Docker containers (LocalStack Pro + MongoDB)
 3. Package all 6 Lambda functions as separate zip files
@@ -69,13 +73,14 @@ Navigate to the **Auth** tab.
 
 #### 1a. Register a user
 
-| Field | Value |
-|-------|-------|
-| Username | `testuser` |
-| Email | `test@cloudbank.com` |
+| Field    | Value                                                            |
+| -------- | ---------------------------------------------------------------- |
+| Username | `testuser`                                                       |
+| Email    | `test@cloudbank.com`                                             |
 | Password | `MyP@ssword123!` (min 12 chars, upper + lower + number + symbol) |
 
 Click **Register**. Expected response:
+
 ```json
 { "message": "User 'testuser' registered successfully" }
 ```
@@ -85,6 +90,7 @@ Click **Register**. Expected response:
 Use the same username and password. Click **Login — get JWT**.
 
 Expected response:
+
 ```json
 {
   "message": "Login successful",
@@ -108,24 +114,25 @@ Navigate to the **Accounts** tab.
 
 #### 2a. Create an account
 
-| Field | Value |
-|-------|-------|
-| Account ID | `ACC-001` |
+| Field      | Value      |
+| ---------- | ---------- |
+| Account ID | `ACC-001`  |
 | Owner Name | `John Doe` |
-| Type | `SAVINGS` |
+| Type       | `SAVINGS`  |
 
 Click **Create Account**. Expected:
+
 ```json
 { "message": "Account created", "account_id": "ACC-001" }
 ```
 
 #### 2b. Create a second account (needed for transfer testing)
 
-| Field | Value |
-|-------|-------|
-| Account ID | `ACC-002` |
+| Field      | Value      |
+| ---------- | ---------- |
+| Account ID | `ACC-002`  |
 | Owner Name | `Jane Doe` |
-| Type | `CHECKING` |
+| Type       | `CHECKING` |
 
 #### 2c. List all accounts
 
@@ -145,12 +152,13 @@ Navigate to the **Transactions** tab.
 
 #### 3a. Deposit
 
-| Field | Value |
-|-------|-------|
+| Field      | Value     |
+| ---------- | --------- |
 | Account ID | `USER_01` |
-| Amount | `500` |
+| Amount     | `500`     |
 
 Click **Deposit**. Expected:
+
 ```json
 {
   "message": "Deposited $500.00 into USER_01",
@@ -162,32 +170,34 @@ Click **Deposit**. Expected:
 #### 3b. Check balance
 
 Same account, click **Check Balance**:
+
 ```json
 { "message": "Balance for USER_01: $500.00", "audit_id": "uuid-here" }
 ```
 
 #### 3c. Withdraw
 
-| Field | Value |
-|-------|-------|
+| Field      | Value     |
+| ---------- | --------- |
 | Account ID | `USER_01` |
-| Amount | `100` |
+| Amount     | `100`     |
 
 Click **Withdraw**. Balance should now be $400.
 
 #### 3d. Insufficient funds (error case)
 
 Try withdrawing `$9999` from `USER_01`. Expected:
+
 ```json
 { "error": "Insufficient funds" }
 ```
 
 #### 3e. Transfer
 
-| Field | Value |
-|-------|-------|
-| Account ID | `USER_01` |
-| Amount | `50` |
+| Field       | Value     |
+| ----------- | --------- |
+| Account ID  | `USER_01` |
+| Amount      | `50`      |
 | Transfer To | `USER_02` |
 
 Click **Transfer**. Then check balance on both accounts.
@@ -221,11 +231,11 @@ Navigate to the **KYC** tab.
 
 #### 4a. Submit KYC
 
-| Field | Value |
-|-------|-------|
-| User ID | `USER_01` |
-| Full Name | `John Doe` |
-| ID Type | `PASSPORT` |
+| Field     | Value       |
+| --------- | ----------- |
+| User ID   | `USER_01`   |
+| Full Name | `John Doe`  |
+| ID Type   | `PASSPORT`  |
 | ID Number | `P12345678` |
 
 Click **Submit KYC**. Save the `kyc_id` from the response.
@@ -237,6 +247,7 @@ Click **Submit KYC**. Save the `kyc_id` from the response.
 #### 4b. Check status
 
 Enter `USER_01` in **User ID** and click **Check Status**:
+
 ```json
 { "kyc_id": "...", "status": "PENDING", "submitted_at": "..." }
 ```
@@ -244,6 +255,7 @@ Enter `USER_01` in **User ID** and click **Check Status**:
 #### 4c. Approve KYC
 
 Paste the `kyc_id` into the **KYC ID** field and click **Approve**:
+
 ```json
 { "message": "KYC xxxxxxxx approved" }
 ```
@@ -267,12 +279,13 @@ Navigate to the **Notifications** tab.
 
 #### 5a. Send SNS alert
 
-| Field | Value |
-|-------|-------|
-| Subject | `Test Alert` |
+| Field   | Value                          |
+| ------- | ------------------------------ |
+| Subject | `Test Alert`                   |
 | Message | `System check from Cloud Bank` |
 
 Click **Publish to SNS**. Expected:
+
 ```json
 { "message": "Alert published to SNS" }
 ```
@@ -281,13 +294,14 @@ Click **Publish to SNS**. Expected:
 
 > LocalStack SES runs in sandbox mode — both sender and recipient must be verified. Terraform provisions `noreply@cloudbank.internal` (sender) and `admin@cloudbank.com` (test recipient) via `aws_ses_email_identity`. Use only these addresses when testing locally.
 
-| Field | Value |
-|-------|-------|
-| To | `admin@cloudbank.com` |
-| Subject | `Test Email` |
+| Field   | Value                   |
+| ------- | ----------------------- |
+| To      | `admin@cloudbank.com`   |
+| Subject | `Test Email`            |
 | Message | `Hello from Cloud Bank` |
 
 Click **Send Email**:
+
 ```json
 { "message": "Email sent to admin@cloudbank.com" }
 ```
@@ -295,6 +309,7 @@ Click **Send Email**:
 #### 5c. Subscribe an email to alerts
 
 Enter an email and click **Subscribe**:
+
 ```json
 { "message": "Subscribed user@example.com to alerts" }
 ```
@@ -398,11 +413,13 @@ curl -X POST "$API_DLQ" -H "Content-Type: application/json" \
 **Option B: Real Failure Test (triggers actual Lambda retries → DLQ)**
 
 Run the automated test script:
+
 ```bash
 ./test_dlq_real_failure.sh
 ```
 
 Windows / PowerShell (no Bash required):
+
 ```powershell
 ./test_dlq_real_failure.ps1
 ```
@@ -418,6 +435,7 @@ To verify that AWS X-Ray tracing is enabled and working for the Lambda functions
 #### 8a. Trigger Lambda executions
 
 Perform actions that invoke Lambdas to generate traces, such as:
+
 - Making a deposit or withdrawal via the **Transactions** tab in the dashboard.
 - Running a load test: `k6 run --env API_BASE=$(terraform output -raw api_base_url) load-test/k6.js`
 
@@ -494,12 +512,12 @@ Default profile: ramp 0→5 VUs (20s) → hold 10 VUs (1m) → spike 20 VUs (20s
 
 **Thresholds** (test fails if breached):
 
-| Metric | Threshold |
-|--------|-----------|
-| Overall p95 latency | < 3 000 ms |
+| Metric                  | Threshold          |
+| ----------------------- | ------------------ |
+| Overall p95 latency     | < 3 000 ms         |
 | Per-service p95 latency | < 1 500 – 3 000 ms |
-| HTTP failure rate | < 10% |
-| Application error rate | < 10% |
+| HTTP failure rate       | < 10%              |
+| Application error rate  | < 10%              |
 
 A custom summary is printed at the end and saved to `load-test/summary.txt`.
 
@@ -517,6 +535,7 @@ k6 run \
 ```
 
 Output:
+
 ```
 ╔══════════════════════════════════════════════════════════════════╗
 ║         CLOUD BANK — API GATEWAY vs ALB COMPARISON              ║
@@ -535,6 +554,7 @@ Output:
 Locust runs a weighted task mix (deposits/balance checks most frequent, KYC/DLQ least frequent) and provides a live web dashboard.
 
 **Headless (CI-friendly):**
+
 ```bash
 locust -f load-test/locust.py --headless \
        --users 10 --spawn-rate 2 --run-time 2m \
@@ -542,12 +562,14 @@ locust -f load-test/locust.py --headless \
 ```
 
 **With live web UI — open `http://localhost:8089`:**
+
 ```bash
 locust -f load-test/locust.py \
        --host $(terraform output -raw api_base_url)
 ```
 
 Against the ALB:
+
 ```bash
 locust -f load-test/locust.py \
        --host $(terraform output -raw alb_base_url)
@@ -555,28 +577,28 @@ locust -f load-test/locust.py \
 
 **Task weights** (higher = more frequent):
 
-| Task | Weight | Why |
-|------|--------|-----|
-| deposit | 3 | most common banking action |
-| balance | 3 | read-heavy workload |
-| withdraw | 2 | less frequent than deposit |
-| transfer | 2 | inter-account |
-| get/list accounts | 1 | metadata reads |
-| KYC submit/check | 1 | infrequent lifecycle event |
-| send alert | 1 | operational |
-| DLQ stats | 1 | monitoring |
+| Task              | Weight | Why                        |
+| ----------------- | ------ | -------------------------- |
+| deposit           | 3      | most common banking action |
+| balance           | 3      | read-heavy workload        |
+| withdraw          | 2      | less frequent than deposit |
+| transfer          | 2      | inter-account              |
+| get/list accounts | 1      | metadata reads             |
+| KYC submit/check  | 1      | infrequent lifecycle event |
+| send alert        | 1      | operational                |
+| DLQ stats         | 1      | monitoring                 |
 
 ---
 
 ### What to expect on LocalStack
 
-| Consideration | Detail |
-|---------------|--------|
+| Consideration                 | Detail                                                                                                           |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------- |
 | **All load hits one machine** | Docker + LocalStack + MongoDB all share your CPU/RAM — you're benchmarking your laptop, not a distributed system |
-| **Bottleneck** | MongoDB container for `/transactions` — it processes all deposits, withdrawals, and transfers sequentially |
-| **Lambda "cold starts"** | LocalStack simulates them but they're much faster than real AWS |
-| **Realistic numbers** | p95 of 200–800ms is typical locally; real AWS would be 50–200ms for warmed Lambdas |
-| **Error handling** | Insufficient-funds responses (400) are expected under load — the scripts treat them as non-failures |
+| **Bottleneck**                | MongoDB container for `/transactions` — it processes all deposits, withdrawals, and transfers sequentially       |
+| **Lambda "cold starts"**      | LocalStack simulates them but they're much faster than real AWS                                                  |
+| **Realistic numbers**         | p95 of 200–800ms is typical locally; real AWS would be 50–200ms for warmed Lambdas                               |
+| **Error handling**            | Insufficient-funds responses (400) are expected under load — the scripts treat them as non-failures              |
 
 ---
 
@@ -632,6 +654,7 @@ export ALB=$(terraform output -raw alb_base_url)
 ```
 
 **Deposit through the ALB:**
+
 ```bash
 curl -s -X POST "$ALB/transactions" \
   -H "Content-Type: application/json" \
@@ -639,6 +662,7 @@ curl -s -X POST "$ALB/transactions" \
 ```
 
 **Register a user through the ALB:**
+
 ```bash
 curl -s -X POST "$ALB/auth" \
   -H "Content-Type: application/json" \
@@ -646,6 +670,7 @@ curl -s -X POST "$ALB/auth" \
 ```
 
 **Create an account through the ALB:**
+
 ```bash
 curl -s -X POST "$ALB/accounts" \
   -H "Content-Type: application/json" \
@@ -653,6 +678,7 @@ curl -s -X POST "$ALB/accounts" \
 ```
 
 **Hit an unknown path (verifies default 404 rule):**
+
 ```bash
 curl -s "$ALB/unknown" | jq
 # → {"error":"Route not found — use /auth /accounts /transactions /kyc /notifications /dlq"}
@@ -712,13 +738,13 @@ Both calls reach the same `lambda_transactions` function and write to the same M
 
 ## Common Issues
 
-| Error | Cause | Fix |
-|-------|-------|-----|
-| `CORS error` in browser | API URL not set | Paste `api_base_url` output into the Settings tab |
-| `Insufficient funds` | Account has no balance | Run a deposit first |
-| `No KYC submission found` | Wrong User ID | Use the exact ID from the submit step |
-| Lambda `error: ...` on transaction | MongoDB not ready | Wait 10s after `./reset.sh` and retry |
-| 403 on any endpoint | JWT expired | Log in again via the Auth tab |
+| Error                              | Cause                  | Fix                                               |
+| ---------------------------------- | ---------------------- | ------------------------------------------------- |
+| `CORS error` in browser            | API URL not set        | Paste `api_base_url` output into the Settings tab |
+| `Insufficient funds`               | Account has no balance | Run a deposit first                               |
+| `No KYC submission found`          | Wrong User ID          | Use the exact ID from the submit step             |
+| Lambda `error: ...` on transaction | MongoDB not ready      | Wait 10s after `./reset.sh` and retry             |
+| 403 on any endpoint                | JWT expired            | Log in again via the Auth tab                     |
 
 ---
 
